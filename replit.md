@@ -20,6 +20,8 @@ This is a Next.js 15.4.6 application for testing new UI features, separate from 
 - After generation starts, user is redirected to Library page to view progress
 - Added support for .mbox files (Google Takeout email archives) in file upload
 - File upload now accepts: video, audio, PDF, and .mbox email archive files
+- Fixed AWS Cognito authentication setup - cleaned up NEXT_PUBLIC_BASE_URL environment variable
+- OTP login flow is now functional at `/signin` for live testing with backend
 
 **October 17, 2025** - Echo Signal Branding & Navigation Updates
 

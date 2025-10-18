@@ -5,6 +5,7 @@ import { Card } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Loader } from "@/components/atoms/loader";
+import { Progress } from "@/components/atoms/progress";
 import {
   ContentKitListItem,
   ContentKitListResponse,
@@ -88,6 +89,7 @@ export default function ContentKitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [nextToken, setNextToken] = useState<string | undefined>();
   const [deletingKit, setDeletingKit] = useState<string | null>(null);
+  const [processingKits, setProcessingKits] = useState<Record<string, any>>({});
 
   const loadContentKits = async (loadMore = false) => {
     try {
@@ -119,6 +121,34 @@ export default function ContentKitsPage() {
   useEffect(() => {
     loadContentKits();
   }, []);
+
+  useEffect(() => {
+    const processingKitIds = contentKits
+      .filter((kit) => kit.status === "PROCESSING")
+      .map((kit) => kit.jobId);
+
+    if (processingKitIds.length > 0) {
+      const interval = setInterval(async () => {
+        for (const jobId of processingKitIds) {
+          try {
+            const status = await contentKitService.getContentKitStatus(jobId);
+            setProcessingKits((prev) => ({
+              ...prev,
+              [jobId]: status.progress,
+            }));
+            
+            if (status.status !== "PROCESSING") {
+              loadContentKits();
+            }
+          } catch (err) {
+            console.error(`Failed to fetch progress for ${jobId}:`, err);
+          }
+        }
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [contentKits]);
 
   const handleView = (jobId: string) => {
     router.push(`/content-kits/${jobId}`);
@@ -280,6 +310,25 @@ export default function ContentKitsPage() {
                         </p>
                       )}
                     </div>
+
+                    {kit.status === "PROCESSING" && processingKits[kit.jobId] && (
+                      <div className="mb-4 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-600">
+                            {processingKits[kit.jobId].currentStep}
+                          </span>
+                          <span className="text-gray-500">
+                            {Math.round(processingKits[kit.jobId].percentage)}%
+                          </span>
+                        </div>
+                        <Progress value={processingKits[kit.jobId].percentage} />
+                        {processingKits[kit.jobId].estimatedTimeRemaining && (
+                          <p className="text-xs text-gray-500">
+                            ~{Math.ceil(processingKits[kit.jobId].estimatedTimeRemaining / 60)} min remaining
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">

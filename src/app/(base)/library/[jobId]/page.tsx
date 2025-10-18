@@ -7,6 +7,7 @@ import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Loader } from "@/components/atoms/loader";
 import { useToast } from "@/components/atoms/toast";
+import { Progress } from "@/components/atoms/progress";
 import { ContentKitStatus, contentKitService } from "@/services/content-kit";
 import {
   FileText,
@@ -24,6 +25,7 @@ import {
   Youtube,
   Mail,
   Video,
+  Check,
 } from "lucide-react";
 
 export default function LibraryDetailPage() {
@@ -37,9 +39,11 @@ export default function LibraryDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
-  const loadContentKit = async () => {
+  const loadContentKit = async (isBackgroundRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isBackgroundRefresh) {
+        setLoading(true);
+      }
       setError(null);
       const data = await contentKitService.getContentKitStatus(jobId);
       setContentKit(data);
@@ -48,7 +52,9 @@ export default function LibraryDetailPage() {
         err instanceof Error ? err.message : "Failed to load content kit"
       );
     } finally {
-      setLoading(false);
+      if (!isBackgroundRefresh) {
+        setLoading(false);
+      }
     }
   };
 
@@ -56,6 +62,16 @@ export default function LibraryDetailPage() {
     loadContentKit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
+
+  useEffect(() => {
+    if (contentKit?.status === "PROCESSING") {
+      const interval = setInterval(() => {
+        loadContentKit(true);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentKit?.status, jobId]);
 
   const formatContentForPlatform = (
     content: string | string[],
@@ -257,34 +273,66 @@ export default function LibraryDetailPage() {
       )}
 
       {/* Processing Status */}
-      {contentKit.status === "PROCESSING" && contentKit.progress && (
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-zinc-900">
-                {contentKit.progress.currentStep}
-              </span>
-              <span className="text-sm text-stone-600">
-                {contentKit.progress.percentage}%
-              </span>
+      {contentKit.status === "PROCESSING" && (
+        <Card className="p-8">
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <Loader className="mt-1 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Generating Your Content Kit
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Your content is being processed. This page will update automatically.
+                </p>
+              </div>
             </div>
-            <div className="w-full bg-stone-200 rounded-full h-2">
-              <div
-                className="bg-[#3a8e9c] h-2 rounded-full transition-all duration-500"
-                style={{ width: `${contentKit.progress.percentage}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-stone-600">
-              <span>
-                Step {contentKit.progress.completedSteps.length} of{" "}
-                {contentKit.progress.totalSteps}
-              </span>
-              {contentKit.progress.estimatedTimeRemaining && (
-                <span>
-                  ~{contentKit.progress.estimatedTimeRemaining} min remaining
-                </span>
-              )}
-            </div>
+
+            {contentKit.progress && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-700">
+                      {contentKit.progress.currentStep}
+                    </span>
+                    <span className="text-gray-500">
+                      {Math.round(contentKit.progress.percentage)}%
+                    </span>
+                  </div>
+                  <Progress value={contentKit.progress.percentage} />
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>
+                      {contentKit.progress.completedSteps.length} of {contentKit.progress.totalSteps} steps completed
+                    </span>
+                    {contentKit.progress.estimatedTimeRemaining && (
+                      <span>
+                        ~{Math.ceil(contentKit.progress.estimatedTimeRemaining / 60)} min remaining
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {contentKit.progress.completedSteps.length > 0 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Completed steps:</p>
+                    <div className="space-y-1">
+                      {contentKit.progress.completedSteps.map((step, index) => (
+                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
+                          <Check className="h-3 w-3 text-green-600" />
+                          {step}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!contentKit.progress && (
+              <div className="text-center py-4">
+                <p className="text-sm text-gray-500">Initializing...</p>
+              </div>
+            )}
           </div>
         </Card>
       )}

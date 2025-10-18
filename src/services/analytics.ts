@@ -72,6 +72,10 @@ export class AnalyticsService {
   }
 
   async getDashboardStats(): Promise<DashboardStats> {
+    if (!this.baseUrl) {
+      return this.getMockDashboardStats();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/analytics/dashboard`, {
         method: "GET",
@@ -104,6 +108,63 @@ export class AnalyticsService {
 
       throw new AnalyticsServiceError("Failed to get dashboard stats");
     }
+  }
+
+  private getMockDashboardStats(): DashboardStats {
+    return {
+      totalContent: 24,
+      readyToPost: 8,
+      posted: 12,
+      totalViews: 135700,
+      engagement: 10900,
+      weeklyGrowth: 27,
+      contentMetrics: [
+        { contentType: "Blog Posts", count: 8, percentage: 33 },
+        { contentType: "Social Media", count: 10, percentage: 42 },
+        { contentType: "Videos", count: 4, percentage: 17 },
+        { contentType: "Newsletters", count: 2, percentage: 8 },
+      ],
+      weeklyActivity: [
+        { date: "Mon", content: 3, views: 1200, engagement: 450 },
+        { date: "Tue", content: 5, views: 2800, engagement: 890 },
+        { date: "Wed", content: 4, views: 3100, engagement: 1200 },
+        { date: "Thu", content: 2, views: 1800, engagement: 670 },
+        { date: "Fri", content: 6, views: 4200, engagement: 1500 },
+        { date: "Sat", content: 3, views: 2200, engagement: 780 },
+        { date: "Sun", content: 1, views: 900, engagement: 340 },
+      ],
+      monthlyTrends: [
+        { month: "Jan", content: 15, views: 28000, engagement: 7200 },
+        { month: "Feb", content: 18, views: 32000, engagement: 8500 },
+        { month: "Mar", content: 24, views: 45000, engagement: 12300 },
+      ],
+      recentActivity: [
+        {
+          id: "1",
+          action: "New blog post published",
+          time: "2 hours ago",
+          status: "success",
+          icon: "FileText",
+          color: "#3a8e9c",
+        },
+        {
+          id: "2",
+          action: "Video content generated",
+          time: "5 hours ago",
+          status: "success",
+          icon: "Video",
+          color: "#9b8baf",
+        },
+        {
+          id: "3",
+          action: "Social media post scheduled",
+          time: "1 day ago",
+          status: "info",
+          icon: "Calendar",
+          color: "#b4a398",
+        },
+      ],
+    };
   }
 
   async getContentMetrics(params?: {

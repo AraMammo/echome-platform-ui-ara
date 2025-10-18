@@ -6,6 +6,18 @@ This is a Next.js 15.4.6 application for testing new UI features, separate from 
 
 ## Recent Changes
 
+**October 18, 2025** - Processing Progress Improvements
+
+- **Enhanced Processing Feedback**: Added real-time progress tracking for content kit generation:
+  - Progress bars showing percentage complete on both list and detail pages
+  - Current processing step display (e.g., "Analyzing content...", "Generating formats...")
+  - Completed steps counter (e.g., "3 of 8 steps completed")
+  - Estimated time remaining in minutes when available
+  - Auto-refresh every 3 seconds to poll for progress updates without page reload
+  - Fixed loading state bug where background refresh was hiding progress UI
+  - Separated initial loading from background refresh to keep progress visible
+- Users no longer see static "Processing..." screens and can track generation progress in real-time
+
 **October 18, 2025** - Content Kits Redesign, Gmail Auto-Expand & Audience Presets
 
 - **Content Kits Redesign**: Rebranded Library page as "Content Kits" with modern UI improvements:

@@ -47,9 +47,11 @@ export function AudienceStep() {
   const [painPointInput, setPainPointInput] = useState("");
   const [goalInput, setGoalInput] = useState("");
   const [isShowingPresets, setIsShowingPresets] = useState(false);
-  const [isShowingDefaultPresets, setIsShowingDefaultPresets] = useState(false);
+  const [isShowingDefaultPresets, setIsShowingDefaultPresets] = useState(true);
   const [isSavingPreset, setIsSavingPreset] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const [selectedPresetForPreview, setSelectedPresetForPreview] = useState<string | null>(null);
+  const [showCustomizeForm, setShowCustomizeForm] = useState(false);
 
   const handleAddPainPoint = () => {
     if (painPointInput.trim()) {
@@ -111,6 +113,36 @@ export function AudienceStep() {
     );
   };
 
+  const handlePresetSelect = (presetId: string) => {
+    const preset = DEFAULT_AUDIENCE_PRESETS.find(p => p.id === presetId);
+    if (preset) {
+      setAudience({
+        name: preset.name,
+        tone: preset.tone,
+        style: preset.style,
+        targetDemographic: preset.targetDemographic,
+        painPoints: [...preset.painPoints],
+        goals: [...preset.goals],
+      });
+      setSelectedPresetForPreview(presetId);
+      setIsShowingDefaultPresets(false);
+    }
+  };
+
+  const handleContinueWithPreset = () => {
+    setSelectedPresetForPreview(null);
+    nextStep();
+  };
+
+  const handleCustomizePreset = () => {
+    setSelectedPresetForPreview(null);
+    setShowCustomizeForm(true);
+  };
+
+  const selectedPreset = selectedPresetForPreview 
+    ? DEFAULT_AUDIENCE_PRESETS.find(p => p.id === selectedPresetForPreview)
+    : null;
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -119,28 +151,84 @@ export function AudienceStep() {
           Define Your Audience
         </h2>
         <p className="text-stone-600">
-          Tell us who you&apos;re creating content for
+          {selectedPreset 
+            ? "Review your audience profile and continue" 
+            : "Tell us who you're creating content for"}
         </p>
       </div>
 
+      {/* Preset Preview and Quick Actions */}
+      {selectedPreset && !showCustomizeForm && (
+        <Card className="p-6 border-2 border-[#3a8e9c] bg-[#3a8e9c]/5">
+          <div className="space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="text-4xl">{selectedPreset.icon}</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-900">
+                    {selectedPreset.name}
+                  </h3>
+                  <p className="text-sm text-stone-600 mt-0.5">
+                    {selectedPreset.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 py-4 border-t border-stone-200">
+              <div>
+                <p className="text-xs font-medium text-stone-500 mb-2">Tone & Style</p>
+                <div className="flex gap-2">
+                  <Badge variant="outline">{selectedPreset.tone}</Badge>
+                  <Badge variant="outline">{selectedPreset.style}</Badge>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-stone-500 mb-2">Demographics</p>
+                <p className="text-xs text-stone-700 line-clamp-2">
+                  {selectedPreset.targetDemographic}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-stone-200">
+              <Button
+                onClick={handleContinueWithPreset}
+                className="flex-1 bg-[#3a8e9c] hover:bg-[#2d7a85]"
+              >
+                Continue to Formats →
+              </Button>
+              <Button
+                onClick={handleCustomizePreset}
+                variant="outline"
+                className="flex-1"
+              >
+                Customize Details
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Preset Management */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-zinc-900">
-            Audience Presets
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setIsShowingDefaultPresets(!isShowingDefaultPresets);
-                if (!isShowingDefaultPresets) setIsShowingPresets(false);
-              }}
-            >
-              <Sparkles className="w-4 h-4 mr-1" />
-              {isShowingDefaultPresets ? "Hide" : "Quick Start"}
-            </Button>
+      {!selectedPreset && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-zinc-900">
+              Audience Presets
+            </h3>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsShowingDefaultPresets(!isShowingDefaultPresets);
+                  if (!isShowingDefaultPresets) setIsShowingPresets(false);
+                }}
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                {isShowingDefaultPresets ? "Hide" : "Quick Start"}
+              </Button>
             <Button
               variant="outline"
               size="sm"
@@ -191,58 +279,48 @@ export function AudienceStep() {
           </div>
         )}
 
-        {isShowingDefaultPresets && (
-          <div className="space-y-3">
-            <p className="text-xs text-stone-600 mb-3">
-              Choose from professionally crafted audience profiles covering diverse demographics
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {DEFAULT_AUDIENCE_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => {
-                    setAudience({
-                      name: preset.name,
-                      tone: preset.tone,
-                      style: preset.style,
-                      targetDemographic: preset.targetDemographic,
-                      painPoints: [...preset.painPoints],
-                      goals: [...preset.goals],
-                    });
-                    setIsShowingDefaultPresets(false);
-                  }}
-                  className="p-4 rounded-[10px] border-2 border-stone-200 bg-white hover:border-[#3a8e9c] hover:shadow-sm transition-all text-left group"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="text-3xl flex-shrink-0">{preset.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-zinc-900 mb-1">
-                        {preset.name}
-                      </div>
-                      <div className="text-xs text-stone-600 mb-2 line-clamp-2">
-                        {preset.description}
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {preset.tone}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {preset.style}
-                        </Badge>
+          {isShowingDefaultPresets && (
+            <div className="space-y-3">
+              <p className="text-xs text-stone-600 mb-3">
+                Choose from professionally crafted audience profiles covering diverse demographics
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {DEFAULT_AUDIENCE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() => handlePresetSelect(preset.id)}
+                    className="p-4 rounded-[10px] border-2 border-stone-200 bg-white hover:border-[#3a8e9c] hover:shadow-sm transition-all text-left group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="text-3xl flex-shrink-0">{preset.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-zinc-900 mb-1">
+                          {preset.name}
+                        </div>
+                        <div className="text-xs text-stone-600 mb-2 line-clamp-2">
+                          {preset.description}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {preset.tone}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {preset.style}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {isShowingPresets && (
           <div className="space-y-2">
@@ -285,8 +363,12 @@ export function AudienceStep() {
             )}
           </div>
         )}
-      </Card>
+        </Card>
+      )}
 
+      {/* Customization Form - Only show when user wants to customize or build from scratch */}
+      {(showCustomizeForm || (!selectedPreset && !isShowingDefaultPresets)) && (
+        <>
       {/* Audience Profile Name */}
       <Card className="p-6">
         <div className="flex items-start gap-4">
@@ -531,6 +613,8 @@ export function AudienceStep() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -4,9 +4,10 @@ import React, { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
-import { Users, Target, Heart, TrendingUp, Plus, X } from "lucide-react";
+import { Users, Target, Heart, TrendingUp, Plus, X, Sparkles } from "lucide-react";
 import { useGenerationStore } from "@/stores/generation-store";
 import { cn } from "@/utils/cn";
+import { DEFAULT_AUDIENCE_PRESETS } from "@/config/audience-presets";
 
 const toneOptions = [
   "Professional",
@@ -46,6 +47,7 @@ export function AudienceStep() {
   const [painPointInput, setPainPointInput] = useState("");
   const [goalInput, setGoalInput] = useState("");
   const [isShowingPresets, setIsShowingPresets] = useState(false);
+  const [isShowingDefaultPresets, setIsShowingDefaultPresets] = useState(false);
   const [isSavingPreset, setIsSavingPreset] = useState(false);
   const [presetName, setPresetName] = useState("");
 
@@ -131,16 +133,30 @@ export function AudienceStep() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsShowingPresets(!isShowingPresets)}
+              onClick={() => {
+                setIsShowingDefaultPresets(!isShowingDefaultPresets);
+                if (!isShowingDefaultPresets) setIsShowingPresets(false);
+              }}
             >
-              {isShowingPresets ? "Hide" : "Load"} Presets
+              <Sparkles className="w-4 h-4 mr-1" />
+              {isShowingDefaultPresets ? "Hide" : "Quick Start"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsShowingPresets(!isShowingPresets);
+                if (!isShowingPresets) setIsShowingDefaultPresets(false);
+              }}
+            >
+              {isShowingPresets ? "Hide" : "My"} Presets
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsSavingPreset(!isSavingPreset)}
             >
-              Save as Preset
+              Save
             </Button>
           </div>
         </div>
@@ -172,6 +188,59 @@ export function AudienceStep() {
             >
               Cancel
             </Button>
+          </div>
+        )}
+
+        {isShowingDefaultPresets && (
+          <div className="space-y-3">
+            <p className="text-xs text-stone-600 mb-3">
+              Choose from professionally crafted audience profiles covering diverse demographics
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {DEFAULT_AUDIENCE_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => {
+                    setAudience({
+                      name: preset.name,
+                      tone: preset.tone,
+                      style: preset.style,
+                      targetDemographic: preset.targetDemographic,
+                      painPoints: [...preset.painPoints],
+                      goals: [...preset.goals],
+                    });
+                    setIsShowingDefaultPresets(false);
+                  }}
+                  className="p-4 rounded-[10px] border-2 border-stone-200 bg-white hover:border-[#3a8e9c] hover:shadow-sm transition-all text-left group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-3xl flex-shrink-0">{preset.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-zinc-900 mb-1">
+                        {preset.name}
+                      </div>
+                      <div className="text-xs text-stone-600 mb-2 line-clamp-2">
+                        {preset.description}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0"
+                        >
+                          {preset.tone}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0"
+                        >
+                          {preset.style}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

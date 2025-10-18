@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/atoms/button";
 import {
   FileText,
@@ -20,9 +20,83 @@ import {
 } from "@/services/database-content";
 import { analyticsService, DashboardStats } from "@/services/analytics";
 import OnboardingWizard from "@/components/molecules/onboarding-wizard";
+import { useOnboardingStatus } from "@/hooks/use-onboarding-status";
+import { VoiceTemperatureOnboarding } from "@/components/organisms/onboarding/voice-temperature";
+import { ProgressDashboard } from "@/components/organisms/onboarding/progress-dashboard";
+import { MilestoneCelebration } from "@/components/organisms/onboarding/milestone-celebration";
+import { useMilestoneTracker } from "@/hooks/use-milestone-tracker";
+import { useRecommendations } from "@/hooks/use-recommendations";
+import { useContentAnalysis } from "@/hooks/use-content-analysis";
+import { SmartBanner } from "@/components/organisms/recommendations/smart-banner";
+import { ContentDiversityMeter } from "@/components/organisms/recommendations/content-diversity-meter";
+import { NextStepCard } from "@/components/organisms/recommendations/next-step-card";
 
 export default function Dashboard() {
+  const searchParams = useSearchParams();
+  const {
+    needsOnboarding,
+    fileCount,
+    isLoading: isLoadingOnboardingStatus,
+  } = useOnboardingStatus();
+  const { showCelebration, currentMilestone, handleCloseCelebration } =
+    useMilestoneTracker(fileCount);
+
+  // Check if user has explicitly skipped onboarding
+  const skipOnboarding =
+    searchParams?.get("skip-onboarding") === "true" ||
+    localStorage.getItem("echome_onboarding_skipped") === "true";
+
+  // Show loading state while checking onboarding status
+  if (isLoadingOnboardingStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#3a8e9c] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#9b8baf]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine which view to show
+  const renderMainView = () => {
+    // 0 files: Show voice temperature onboarding
+    if (needsOnboarding && !skipOnboarding) {
+      return <VoiceTemperatureOnboarding />;
+    }
+
+    // 1-9 files: Show progress dashboard
+    if (fileCount > 0 && fileCount < 10 && !skipOnboarding) {
+      return <ProgressDashboard fileCount={fileCount} />;
+    }
+
+    // 10+ files or skipped: Show regular dashboard
+    return <RegularDashboard />;
+  };
+
+  // Show milestone celebration overlay if applicable
+  if (showCelebration && currentMilestone) {
+    return (
+      <>
+        {renderMainView()}
+        <MilestoneCelebration
+          milestone={currentMilestone}
+          onClose={handleCloseCelebration}
+        />
+      </>
+    );
+  }
+
+  return renderMainView();
+}
+
+// Regular dashboard component (extracted from the original Dashboard)
+function RegularDashboard() {
   const router = useRouter();
+  const { fileCount, temperatureLevel } = useOnboardingStatus();
+  const { topRecommendation, dismissRecommendation } =
+    useRecommendations(fileCount);
+  const { analysis } = useContentAnalysis();
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>(
     []
   );
@@ -32,6 +106,23 @@ export default function Dashboard() {
   );
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const handleRecommendationAction = (action: string) => {
+    switch (action) {
+      case "gmail_tutorial":
+        router.push("/knowledge-base?action=gmail");
+        break;
+      case "youtube_connect":
+        router.push("/knowledge-base?action=youtube");
+        break;
+      case "knowledge_base":
+      case "upload_documents":
+        router.push("/knowledge-base");
+        break;
+      default:
+        router.push("/knowledge-base");
+    }
+  };
 
   useEffect(() => {
     // Check if user has completed onboarding
@@ -221,6 +312,87 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Smart Recommendation Banner (if any) */}
+        {topRecommendation && (
+          <SmartBanner
+            recommendation={topRecommendation}
+            onDismiss={() => dismissRecommendation(topRecommendation.action)}
+            onAction={() =>
+              handleRecommendationAction(topRecommendation.action)
+            }
+          />
+        )}
+
+        {/* Content Diversity (show if user has 10+ files) */}
+        {analysis && fileCount >= 10 && (
+          <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc]">
+            <ContentDiversityMeter
+              diversity={analysis.diversity}
+              missingTypes={analysis.missingTypes}
+            />
+          </div>
+        )}
+
+        {/* Voice Testing Section - Show for users with 10+ files */}
+        {fileCount >= 10 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Test Your Voice */}
+            <div className="rounded-[20px] border border-[#3a8e9c] p-6 bg-[#3a8e9c]/5">
+              <div className="mb-3 text-4xl">🧪</div>
+              <h3 className="font-medium text-[#1c1c1e] mb-2">
+                Test Your Voice
+              </h3>
+              <p className="text-sm text-[#9b8baf] mb-4">
+                Compare different output styles
+              </p>
+              <Button
+                onClick={() => router.push("/compare")}
+                className="w-full bg-[#3a8e9c] hover:bg-[#2d7a85]"
+              >
+                Try Comparison Studio →
+              </Button>
+            </div>
+
+            {/* Voice Evolution */}
+            {fileCount >= 25 && (
+              <div className="rounded-[20px] border border-[#9b8baf] p-6 bg-[#9b8baf]/5">
+                <div className="mb-3 text-4xl">📊</div>
+                <h3 className="font-medium text-[#1c1c1e] mb-2">
+                  Voice Evolution
+                </h3>
+                <p className="text-sm text-[#9b8baf] mb-4">
+                  See how your AI has improved
+                </p>
+                <Button
+                  onClick={() => router.push("/evolution")}
+                  className="w-full border-[#9b8baf] text-[#9b8baf] hover:bg-[#9b8baf]/10"
+                  variant="outline"
+                >
+                  View Timeline →
+                </Button>
+              </div>
+            )}
+
+            {/* Share Results */}
+            <div className="rounded-[20px] border border-[#b4a398] p-6 bg-[#b4a398]/5">
+              <div className="mb-3 text-4xl">🎯</div>
+              <h3 className="font-medium text-[#1c1c1e] mb-2">
+                Share Your Results
+              </h3>
+              <p className="text-sm text-[#9b8baf] mb-4">
+                Show others your Echo Me voice
+              </p>
+              <Button
+                onClick={() => router.push("/share")}
+                className="w-full border-[#b4a398] text-[#b4a398] hover:bg-[#b4a398]/10"
+                variant="outline"
+              >
+                Create Share Card →
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc]">
           <h3 className="text-lg font-semibold text-[#1c1c1e] font-['Satoshi'] mb-4">
@@ -457,6 +629,12 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Next Step Card (always at bottom) */}
+        <NextStepCard
+          fileCount={fileCount}
+          temperatureLevel={temperatureLevel}
+        />
 
         <div className="fixed bottom-6 right-6">
           <div className="w-16 h-16 bg-[#d5d2cc] rounded-full flex items-center justify-center opacity-60">

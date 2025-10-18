@@ -59,10 +59,23 @@ import {
 } from "@/services/knowledge-base";
 import { useAuthStore } from "@/stores/auth-store";
 import { useToast } from "@/components/atoms/toast";
+import { useRecommendations } from "@/hooks/use-recommendations";
+import { useContentAnalysis } from "@/hooks/use-content-analysis";
+import { SmartBanner } from "@/components/organisms/recommendations/smart-banner";
+import { ContentDiversityMeter } from "@/components/organisms/recommendations/content-diversity-meter";
 
 export default function KnowledgeBaseRedesign() {
   const { showToast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+
+  // Media files state (moved up to use in hooks)
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+
+  // Recommendation hooks (now using actual file count)
+  const { topRecommendation, dismissRecommendation } = useRecommendations(
+    mediaFiles.length
+  );
+  const { analysis } = useContentAnalysis();
 
   // Gmail Tutorial state
   const [isTutorialExpanded, setIsTutorialExpanded] = useState(false);
@@ -83,9 +96,6 @@ export default function KnowledgeBaseRedesign() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [mediaTypeFilter, setMediaTypeFilter] = useState("All Types");
-
-  // Media files state
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [mediaLoading, setMediaLoading] = useState(true);
   const [mediaError, setMediaError] = useState<string | null>(null);
 
@@ -788,6 +798,27 @@ export default function KnowledgeBaseRedesign() {
     return false;
   };
 
+  const handleRecommendationAction = (action: string) => {
+    switch (action) {
+      case "gmail_tutorial":
+        setIsTutorialExpanded(true);
+        // Scroll to Gmail section
+        document
+          .getElementById("gmail-section")
+          ?.scrollIntoView({ behavior: "smooth" });
+        break;
+      case "youtube_connect":
+        handleConnectYouTube();
+        break;
+      case "upload_documents":
+      case "knowledge_base":
+        fileInputRef.current?.click();
+        break;
+      default:
+        break;
+    }
+  };
+
   const filteredMediaFiles = mediaFiles.filter((file) => {
     const matchesSearch = file.fileName
       .toLowerCase()
@@ -854,142 +885,28 @@ export default function KnowledgeBaseRedesign() {
           </div>
         )}
 
-        {/* Smart Suggestions Banner - Scenario A: No content */}
-        {!mediaLoading &&
-          mediaFiles.length === 0 &&
-          !isSuggestionDismissed("no-content") && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-[10px] p-6 mb-8 border border-blue-200">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🚀</span>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      Quick Start: Upload Your Best Work
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-700 font-['Satoshi'] mb-4">
-                    Start with 3-5 of your best-performing emails or articles.
-                    This gives Echo Me a foundation to learn from.
-                  </p>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-[#3a8e9c] hover:bg-[#2d7a85] text-white font-medium font-['Satoshi'] px-4 py-2 rounded-[10px] text-sm"
-                  >
-                    Upload Files
-                  </Button>
-                </div>
-                <button
-                  onClick={() => dismissSuggestion("no-content")}
-                  className="text-stone-400 hover:text-stone-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          )}
-
-        {/* Smart Suggestions Banner - Scenario B: No Gmail */}
-        {!mediaLoading &&
-          mediaFiles.length > 0 &&
-          mediaFiles.length <= 50 &&
-          contentTypeBreakdown.emails === 0 &&
-          !isSuggestionDismissed("no-gmail") && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-[10px] p-6 mb-8 border border-purple-200">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">💡</span>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      10x Your Training: Import Your Gmail Sent Folder
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-700 font-['Satoshi'] mb-2">
-                    You&apos;ve uploaded {mediaFiles.length} files. Add your
-                    Gmail sent folder to give Echo Me hundreds of examples of
-                    your writing style.
-                  </p>
-                  <p className="text-xs text-purple-600 font-medium font-['Satoshi'] mb-4">
-                    This typically adds 200-500 examples instantly
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => {
-                        setIsTutorialExpanded(true);
-                        window.scrollTo({
-                          top:
-                            document.getElementById("gmail-tutorial")
-                              ?.offsetTop || 0,
-                          behavior: "smooth",
-                        });
-                      }}
-                      className="bg-[#3a8e9c] hover:bg-[#2d7a85] text-white font-medium font-['Satoshi'] px-4 py-2 rounded-[10px] text-sm"
-                    >
-                      Show Me How
-                    </Button>
-                    <Button
-                      onClick={() => dismissSuggestion("no-gmail")}
-                      variant="outline"
-                      className="border-stone-300 text-stone-700 font-medium font-['Satoshi'] px-4 py-2 rounded-[10px] text-sm"
-                    >
-                      Dismiss
-                    </Button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => dismissSuggestion("no-gmail")}
-                  className="text-stone-400 hover:text-stone-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          )}
-
-        {/* Smart Suggestions Banner - Scenario C: No YouTube */}
-        {!mediaLoading &&
-          mediaFiles.length > 0 &&
-          mediaFiles.length <= 50 &&
-          contentTypeBreakdown.videos === 0 &&
-          !isYouTubeConnected() &&
-          !isSuggestionDismissed("no-youtube") && (
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-[10px] p-6 mb-8 border border-red-200">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🎥</span>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      Add Your Video Content
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-700 font-['Satoshi'] mb-4">
-                    Connect your YouTube channel to automatically import video
-                    transcripts. Great for learning your speaking style.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleConnectYouTube}
-                      className="bg-[#3a8e9c] hover:bg-[#2d7a85] text-white font-medium font-['Satoshi'] px-4 py-2 rounded-[10px] text-sm"
-                    >
-                      Connect YouTube
-                    </Button>
-                    <Button
-                      onClick={() => dismissSuggestion("no-youtube")}
-                      variant="outline"
-                      className="border-stone-300 text-stone-700 font-medium font-['Satoshi'] px-4 py-2 rounded-[10px] text-sm"
-                    >
-                      Not Now
-                    </Button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => dismissSuggestion("no-youtube")}
-                  className="text-stone-400 hover:text-stone-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Smart Recommendation Banner */}
+        {!mediaLoading && topRecommendation && (
+          <div className="mb-8">
+            <SmartBanner
+              recommendation={topRecommendation}
+              onDismiss={() => {
+                const recId =
+                  topRecommendation.action === "gmail_tutorial"
+                    ? "gmail_import"
+                    : topRecommendation.action === "upload_documents"
+                      ? "add_documents"
+                      : topRecommendation.action === "youtube_connect"
+                        ? "add_media"
+                        : "upload_more";
+                dismissRecommendation(recId);
+              }}
+              onAction={() =>
+                handleRecommendationAction(topRecommendation.action)
+              }
+            />
+          </div>
+        )}
 
         {/* AI Brain Progress Indicator */}
         {!mediaLoading && mediaFiles.length > 0 && (
@@ -1124,91 +1041,18 @@ export default function KnowledgeBaseRedesign() {
         )}
 
         {/* Content Diversity Meter */}
-        {!mediaLoading && mediaFiles.length > 0 && (
-          <div className="bg-white rounded-[10px] p-6 mb-8 border border-stone-200">
-            <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi'] mb-4">
-              Content Diversity
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-stone-700 font-['Satoshi']">
-                    Emails
-                  </span>
-                  <span className="text-sm font-medium text-[#1c1c1e] font-['Satoshi']">
-                    {getContentDiversity().emails}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-300"
-                    style={{ width: `${getContentDiversity().emails}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-stone-700 font-['Satoshi']">
-                    Documents
-                  </span>
-                  <span className="text-sm font-medium text-[#1c1c1e] font-['Satoshi']">
-                    {getContentDiversity().documents}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 transition-all duration-300"
-                    style={{ width: `${getContentDiversity().documents}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-stone-700 font-['Satoshi']">
-                    Videos/Audio
-                  </span>
-                  <span className="text-sm font-medium text-[#1c1c1e] font-['Satoshi']">
-                    {getContentDiversity().videos}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-500 transition-all duration-300"
-                    style={{ width: `${getContentDiversity().videos}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-stone-700 font-['Satoshi']">
-                    Articles
-                  </span>
-                  <span className="text-sm font-medium text-[#1c1c1e] font-['Satoshi']">
-                    {getContentDiversity().articles}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-purple-500 transition-all duration-300"
-                    style={{ width: `${getContentDiversity().articles}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            {getMissingContentTypes().length > 0 && (
-              <div className="mt-4 p-3 bg-amber-50 rounded-[10px] border border-amber-200">
-                <p className="text-sm text-amber-800 font-['Satoshi']">
-                  💡 Tip: Add {getMissingContentTypes().join(", ")} to give Echo
-                  Me a more complete picture of your expertise
-                </p>
-              </div>
-            )}
+        {!mediaLoading && mediaFiles.length >= 10 && analysis && (
+          <div className="mb-8">
+            <ContentDiversityMeter
+              diversity={analysis.diversity}
+              missingTypes={analysis.missingTypes}
+            />
           </div>
         )}
 
         {/* Gmail Takeout Tutorial */}
         <div
-          id="gmail-tutorial"
+          id="gmail-section"
           className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-[10px] p-6 mb-8 border border-blue-200"
         >
           <button

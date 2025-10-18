@@ -16,6 +16,10 @@ import {
   Package,
   Sparkles,
   Library,
+  Lock,
+  Share2,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 
 import {
@@ -54,9 +58,11 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUsers } from "@/hooks/api/use-users";
 import { useAsset } from "@/hooks/assets";
 import { useRouter } from "next/navigation";
+import { useOnboardingStatus } from "@/hooks/use-onboarding-status";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/utils/cn";
 
 const navItems = [
   {
@@ -65,13 +71,15 @@ const navItems = [
     icon: Home,
     items: [],
     iconClassName: "text-primary",
+    minFilesRequired: 0,
   },
   {
     title: "Generate",
-    url: "/generate",
+    url: "/create",
     icon: Sparkles,
     items: [],
     iconClassName: "text-primary",
+    minFilesRequired: 10,
   },
   {
     title: "Library",
@@ -79,6 +87,7 @@ const navItems = [
     icon: Library,
     items: [],
     iconClassName: "text-primary",
+    minFilesRequired: 10,
   },
   {
     title: "Repurpose Engine",
@@ -86,6 +95,7 @@ const navItems = [
     icon: Bot,
     items: [],
     iconClassName: "text-primary",
+    minFilesRequired: 0,
   },
   {
     title: "Knowledge Base",
@@ -93,6 +103,40 @@ const navItems = [
     icon: Lightbulb,
     items: [],
     iconClassName: "text-primary",
+    minFilesRequired: 0,
+  },
+  {
+    title: "Compare",
+    url: "/compare",
+    icon: Zap,
+    items: [],
+    iconClassName: "text-primary",
+    minFilesRequired: 10,
+    badge: "New",
+  },
+  {
+    title: "Showcase",
+    url: "/showcase",
+    icon: BarChart3,
+    items: [],
+    iconClassName: "text-primary",
+    minFilesRequired: 10,
+  },
+  {
+    title: "Evolution",
+    url: "/evolution",
+    icon: TrendingUp,
+    items: [],
+    iconClassName: "text-primary",
+    minFilesRequired: 25,
+  },
+  {
+    title: "Share",
+    url: "/share",
+    icon: Share2,
+    items: [],
+    iconClassName: "text-primary",
+    minFilesRequired: 10,
   },
   {
     title: "Schedule",
@@ -101,6 +145,7 @@ const navItems = [
     items: [],
     iconClassName: "text-primary",
     comingSoon: true,
+    minFilesRequired: 25,
   },
 ];
 
@@ -249,6 +294,7 @@ function NavMain({
     iconClassName?: string;
     isActive?: boolean;
     comingSoon?: boolean;
+    minFilesRequired?: number;
     items?: {
       title: string;
       url: string;
@@ -257,6 +303,7 @@ function NavMain({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { fileCount } = useOnboardingStatus();
   const {
     handleOpenCreateModal,
     handleOpenBulkCreateModal,
@@ -283,6 +330,8 @@ function NavMain({
           const Icon = item.icon;
           const isActive =
             pathname === item.url || pathname.startsWith(item.url + "/");
+          const isLocked = fileCount < (item.minFilesRequired || 0);
+          const isDisabled = item.comingSoon || isLocked;
 
           return (
             <Collapsible
@@ -294,23 +343,58 @@ function NavMain({
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    tooltip={item.title}
-                    isActive={isActive}
-                    asChild={!item.items || item.items.length === 0}
-                    className={
-                      item.comingSoon ? "opacity-60 cursor-not-allowed" : ""
+                    tooltip={
+                      isLocked
+                        ? `Upload ${(item.minFilesRequired || 0) - fileCount} more files to unlock`
+                        : item.title
                     }
+                    isActive={isActive && !isDisabled}
+                    asChild={
+                      (!item.items || item.items.length === 0) && !isDisabled
+                    }
+                    className={cn(
+                      isDisabled && "opacity-60 cursor-not-allowed"
+                    )}
+                    onClick={(e) => {
+                      if (isDisabled) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
                   >
                     {!item.items || item.items.length === 0 ? (
-                      item.comingSoon ? (
+                      isDisabled ? (
                         <div className="flex items-center w-full">
-                          {Icon && <Icon className={item.iconClassName} />}
-                          <span>{item.title}</span>
+                          <div className="relative">
+                            {Icon && (
+                              <Icon
+                                className={cn(
+                                  item.iconClassName,
+                                  isLocked && "text-[#9b8baf]"
+                                )}
+                              />
+                            )}
+                            {isLocked && (
+                              <Lock
+                                className="absolute -top-1 -right-1 h-3 w-3 text-[#9b8baf]"
+                                aria-label="Locked"
+                              />
+                            )}
+                          </div>
+                          <span
+                            className={cn(isLocked && "text-[#9b8baf] ml-2")}
+                          >
+                            {item.title}
+                          </span>
                           <div className="ml-auto flex items-center gap-2">
-                            <Clock className="h-3 w-3 text-gray-400" />
-                            <span className="text-xs text-gray-400">
-                              Coming Soon
-                            </span>
+                            {item.comingSoon && (
+                              <>
+                                <Clock className="h-3 w-3 text-gray-400" />
+                                <span className="text-xs text-gray-400">
+                                  Coming Soon
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -321,8 +405,25 @@ function NavMain({
                       )
                     ) : (
                       <>
-                        {Icon && <Icon className={item.iconClassName} />}
-                        <span>{item.title}</span>
+                        <div className="relative">
+                          {Icon && (
+                            <Icon
+                              className={cn(
+                                item.iconClassName,
+                                isLocked && "text-[#9b8baf]"
+                              )}
+                            />
+                          )}
+                          {isLocked && (
+                            <Lock
+                              className="absolute -top-1 -right-1 h-3 w-3 text-[#9b8baf]"
+                              aria-label="Locked"
+                            />
+                          )}
+                        </div>
+                        <span className={cn(isLocked && "text-[#9b8baf]")}>
+                          {item.title}
+                        </span>
                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </>
                     )}

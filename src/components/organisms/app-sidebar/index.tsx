@@ -79,7 +79,7 @@ const navItems = [
     icon: Sparkles,
     items: [],
     iconClassName: "text-primary",
-    minFilesRequired: 10,
+    minFilesRequired: 0,
   },
   {
     title: "Library",
@@ -87,7 +87,7 @@ const navItems = [
     icon: Library,
     items: [],
     iconClassName: "text-primary",
-    minFilesRequired: 10,
+    minFilesRequired: 0,
   },
   {
     title: "Repurpose Engine",

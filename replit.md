@@ -15,6 +15,9 @@ This is a Next.js 15.4.6 application for testing new UI features, separate from 
   - "Customize" → Expands full form for detailed editing
 - Quick Start presets now show by default on Audience step for faster onboarding
 - Each preset includes: name, tone, style, target demographic, 5 pain points, 5 goals
+- Removed redundant Step 4 (Review) - Formats step now directly triggers generation
+- Streamlined to 3-step workflow: Source → Audience → Formats (with Generate button)
+- After generation starts, user is redirected to Library page to view progress
 
 **October 17, 2025** - Echo Signal Branding & Navigation Updates
 

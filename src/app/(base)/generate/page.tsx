@@ -27,11 +27,6 @@ const steps = [
     title: "Formats",
     description: "Select output formats",
   },
-  {
-    number: 4,
-    title: "Generate",
-    description: "Review and generate",
-  },
 ];
 
 export default function GeneratePage() {
@@ -59,8 +54,6 @@ export default function GeneratePage() {
         return <AudienceStep />;
       case 3:
         return <FormatStep />;
-      case 4:
-        return <GenerateStep />;
       default:
         return <SourceStep />;
     }
@@ -138,7 +131,7 @@ export default function GeneratePage() {
         <div className="mb-8">{renderStep()}</div>
 
         {/* Auto-save indicator */}
-        {currentStep < 4 && (
+        {currentStep < 3 && (
           <div className="text-center">
             <p className="text-xs text-stone-500">
               <Save className="w-3 h-3 inline mr-1" />

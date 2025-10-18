@@ -346,11 +346,11 @@ export function SourceStep() {
       {/* Action Buttons */}
       <div className="space-y-4 pt-6 border-t border-stone-200">
         <div className="text-sm text-stone-600 text-center sm:hidden">
-          Step 1 of 4 • Choose your content source
+          Step 1 of 3 • Choose your content source
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="text-sm text-stone-600 hidden sm:block">
-            Step 1 of 4 • Choose your content source
+            Step 1 of 3 • Choose your content source
           </div>
           <Button
             onClick={nextStep}

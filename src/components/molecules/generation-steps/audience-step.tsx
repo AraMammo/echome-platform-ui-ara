@@ -589,7 +589,7 @@ export function AudienceStep() {
       {/* Action Buttons */}
       <div className="space-y-4 pt-6 border-t border-stone-200">
         <div className="text-sm text-stone-600 text-center sm:hidden">
-          Step 2 of 4 • Define your audience
+          Step 2 of 3 • Define your audience
         </div>
         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Button
@@ -601,7 +601,7 @@ export function AudienceStep() {
           </Button>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="text-sm text-stone-600 text-center hidden sm:block">
-              Step 2 of 4 • Define your audience
+              Step 2 of 3 • Define your audience
             </div>
             <Button
               onClick={nextStep}

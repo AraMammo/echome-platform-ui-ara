@@ -14,9 +14,12 @@ import {
   Mail,
   Video,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { useGenerationStore, ContentFormat } from "@/stores/generation-store";
 import { cn } from "@/utils/cn";
+import { contentKitService } from "@/services/content-kit";
+import { useRouter } from "next/navigation";
 
 interface FormatOption {
   format: ContentFormat;
@@ -95,18 +98,29 @@ const formatOptions: FormatOption[] = [
 ];
 
 export function FormatStep() {
+  const router = useRouter();
   const {
+    sourceType,
+    textInput,
+    fileId,
+    urls,
+    useKnowledgeBase,
+    audience,
     selectedFormats,
     toggleFormat,
     setFormats,
     clearFormats,
     previousStep,
-    nextStep,
+    setIsGenerating,
+    setJobId,
+    setError,
+    clearDraft,
   } = useGenerationStore();
 
   const [selectedCategory, setSelectedCategory] = useState<
     "All" | "Social" | "Long-form" | "Video"
   >("All");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredFormats =
     selectedCategory === "All"
@@ -141,6 +155,69 @@ export function FormatStep() {
 
     const total = times.reduce((acc, time) => acc + time, 0);
     return Math.ceil(total);
+  };
+
+  const handleGenerate = async () => {
+    setIsSubmitting(true);
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("User ID not found. Please log in again.");
+      }
+
+      let inputType: "video" | "prompt" | "voice_note" | "social_import";
+      const baseInputData: {
+        userId: string;
+        fileId?: string;
+        text?: string;
+        content?: string;
+      } = {
+        userId,
+      };
+
+      if (sourceType === "file" && fileId) {
+        inputType = "video";
+        baseInputData.fileId = fileId;
+      } else if (sourceType === "text" && textInput.trim()) {
+        inputType = "prompt";
+        baseInputData.text = textInput.trim();
+      } else if (sourceType === "url" && urls.length > 0) {
+        inputType = "social_import";
+        baseInputData.content = JSON.stringify({
+          urls,
+          useKnowledgeBase,
+        });
+      } else {
+        throw new Error("Invalid source configuration");
+      }
+
+      if (!baseInputData.content) {
+        baseInputData.content = JSON.stringify({
+          audience,
+          formats: selectedFormats,
+          useKnowledgeBase,
+        });
+      }
+
+      const response = await contentKitService.generateContentKit({
+        inputType,
+        inputData: baseInputData,
+      });
+
+      setJobId(response.jobId);
+      clearDraft();
+      
+      router.push(`/library/${response.jobId}`);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to start generation"
+      );
+      setIsGenerating(false);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -315,26 +392,28 @@ export function FormatStep() {
       {/* Action Buttons */}
       <div className="space-y-4 pt-6 border-t border-stone-200">
         <div className="text-sm text-stone-600 text-center sm:hidden">
-          Step 3 of 4 • Select content formats
+          Step 3 of 3 • Select content formats
         </div>
         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Button
             variant="outline"
             onClick={previousStep}
+            disabled={isSubmitting}
             className="w-full sm:w-auto"
           >
             Back to Audience
           </Button>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="text-sm text-stone-600 text-center hidden sm:block">
-              Step 3 of 4 • Select content formats
+              Step 3 of 3 • Select content formats
             </div>
             <Button
-              onClick={nextStep}
-              disabled={!canProceed()}
-              className="bg-[#3a8e9c] hover:bg-[#2d7a85] disabled:bg-stone-300 w-full sm:w-auto"
+              onClick={handleGenerate}
+              disabled={!canProceed() || isSubmitting}
+              className="bg-[#3a8e9c] hover:bg-[#2d7a85] disabled:bg-stone-300 w-full sm:w-auto px-8"
             >
-              Continue to Review
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isSubmitting ? "Generating..." : "Generate Content Kit"}
             </Button>
           </div>
         </div>

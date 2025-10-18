@@ -80,7 +80,7 @@ export default function MediaSettings({
     "resize" | "convert" | "thumbnail" | "watermark"
   >("resize");
   const [isLoading, setIsLoading] = useState(false);
-  const { error: showError, success: showSuccess } = useToast();
+  const { showToast } = useToast();
 
   const form = useForm<TransformMediaRequest>({
     defaultValues: {
@@ -114,7 +114,7 @@ export default function MediaSettings({
 
   const onSubmit = async (data: TransformMediaRequest) => {
     if (!data.fileId) {
-      showError("Please upload a file first before applying transformations");
+      showToast("Please upload a file first before applying transformations");
       return;
     }
 
@@ -169,13 +169,13 @@ export default function MediaSettings({
         onTransform(data);
       }
 
-      showSuccess("Media transformation started successfully!");
+      showToast("Media transformation started successfully!");
     } catch (error) {
       console.error("Transform error:", error);
       if (error instanceof MediaServiceError) {
-        showError(`Transform failed: ${error.message}`);
+        showToast(`Transform failed: ${error.message}`);
       } else {
-        showError("Transform failed: Unknown error");
+        showToast("Transform failed: Unknown error");
       }
     } finally {
       setIsLoading(false);

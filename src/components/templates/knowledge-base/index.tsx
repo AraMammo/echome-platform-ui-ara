@@ -60,7 +60,7 @@ import SocialImportSection from "@/components/molecules/social-import-section";
 import ImportJobTracker from "@/components/molecules/import-job-tracker";
 
 export default function KnowledgeBaseTemplate() {
-  const { success, error: showToastError } = useToast();
+  const { showToast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
 
   const [isSyncingVideos, setIsSyncingVideos] = useState(false);
@@ -168,7 +168,7 @@ export default function KnowledgeBaseTemplate() {
 
   const showError = (message: string) => {
     setError(message);
-    showToastError(message);
+    showToast(message, "error");
     setTimeout(() => setError(null), 5000);
   };
 
@@ -281,7 +281,7 @@ export default function KnowledgeBaseTemplate() {
         } catch (syncError) {
           const errorMessage =
             syncError instanceof Error ? syncError.message : "Unknown error";
-          showToastError(
+          showToast(
             `Video sync failed, but connection successful: ${errorMessage}`
           );
         } finally {
@@ -291,7 +291,7 @@ export default function KnowledgeBaseTemplate() {
         // Step 3: Fetch user videos
         await fetchUserVideos();
 
-        success("YouTube connected and synced successfully!");
+        showToast("YouTube connected and synced successfully!", "success");
         localStorage.removeItem("youtube_oauth_code");
         localStorage.removeItem("youtube_oauth_state");
       } catch (err) {
@@ -299,13 +299,13 @@ export default function KnowledgeBaseTemplate() {
         const errorMessage =
           err instanceof Error ? err.message : "Connection failed";
 
-        showToastError(`YouTube connection failed: ${errorMessage}`);
+        showToast(`YouTube connection failed: ${errorMessage}`, "error");
 
         localStorage.removeItem("youtube_oauth_code");
         localStorage.removeItem("youtube_oauth_state");
       }
     },
-    [success, showToastError]
+    [showToast]
   );
 
   useEffect(() => {
@@ -339,7 +339,7 @@ export default function KnowledgeBaseTemplate() {
     if (isYouTubeConnected()) {
       fetchUserVideos();
     }
-  }, [isAuthenticated, authLoading, processAuthorizationCode, success]);
+  }, [isAuthenticated, authLoading, processAuthorizationCode]);
 
   // Function to handle viewing a file
   const handleViewFile = async (file: MediaFile) => {
@@ -554,7 +554,7 @@ export default function KnowledgeBaseTemplate() {
             setIsMonitoringTranscription(false);
             setIsWaitingCompleteTranscripting(false);
             setIsPdfFile(false);
-            success("PDF processing completed successfully!");
+            showToast("PDF processing completed successfully!", "success");
             await fetchMediaFiles();
           } else if (
             pdfStatusService.isPdfFailed(statusData.status) &&
@@ -583,7 +583,7 @@ export default function KnowledgeBaseTemplate() {
           ) {
             setIsMonitoringTranscription(false);
             setIsWaitingCompleteTranscripting(false);
-            success("Transcription completed successfully!");
+            showToast("Transcription completed successfully!", "success");
             await fetchMediaFiles();
           } else if (
             transcriptionStatusService.isTranscriptionFailed(statusData.status)
@@ -641,13 +641,16 @@ export default function KnowledgeBaseTemplate() {
 
   const handleImportSuccess = (jobId: string) => {
     setImportJobs((prev) => [...prev, jobId]);
-    success("Content import started! We'll notify you when it's complete.");
+    showToast(
+      "Content import started! We'll notify you when it's complete.",
+      "success"
+    );
   };
 
   const handleJobComplete = (status: {
     result?: { entriesAdded?: number };
   }) => {
-    success(
+    showToast(
       `Import completed! Added ${status.result?.entriesAdded || 0} items to your knowledge base.`
     );
     // Refresh media files to show new content
@@ -744,13 +747,13 @@ export default function KnowledgeBaseTemplate() {
                         maxResults: 20,
                       });
                       await fetchUserVideos();
-                      success("Videos synced successfully!");
+                      showToast("Videos synced successfully!", "success");
                     } catch (error) {
                       const errorMessage =
                         error instanceof Error
                           ? error.message
                           : "Unknown error";
-                      showToastError(`Sync failed: ${errorMessage}`);
+                      showToast(`Sync failed: ${errorMessage}`, "error");
                     } finally {
                       setIsSyncingVideos(false);
                     }
@@ -912,7 +915,7 @@ export default function KnowledgeBaseTemplate() {
             <div className="flex items-center gap-2">
               <ManualContentUpload
                 onUploadSuccess={() => {
-                  success("Writing sample uploaded successfully!");
+                  showToast("Writing sample uploaded successfully!", "success");
                   fetchMediaFiles(); // Refresh the media list
                 }}
                 className="mr-2"

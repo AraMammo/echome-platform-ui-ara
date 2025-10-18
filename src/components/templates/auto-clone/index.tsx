@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/components/atoms/toast";
 
 export default function RepurposeEngineTemplate() {
-  const { success, error } = useToast();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("creators");
   const [urlInput, setUrlInput] = useState("");
   const [autoCreateKits, setAutoCreateKits] = useState(true);
@@ -122,12 +122,12 @@ export default function RepurposeEngineTemplate() {
   const handleAddCreator = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!urlInput.trim()) {
-      error("Please enter a URL");
+      showToast("Please enter a URL");
       return;
     }
 
     if (!repurposeEngineService.validateUrl(urlInput.trim())) {
-      error("Invalid URL format");
+      showToast("Invalid URL format");
       return;
     }
 
@@ -135,7 +135,7 @@ export default function RepurposeEngineTemplate() {
       urlInput.trim()
     );
     if (!detectedPlatform) {
-      error(
+      showToast(
         "Unsupported platform. Supported platforms: YouTube, TikTok, Instagram, LinkedIn, Articles"
       );
       return;
@@ -150,7 +150,7 @@ export default function RepurposeEngineTemplate() {
         pollingInterval: pollingInterval,
       });
 
-      success(
+      showToast(
         `Successfully added ${creator.creatorName || detectedPlatform} creator to monitoring!`
       );
       setUrlInput("");
@@ -163,7 +163,7 @@ export default function RepurposeEngineTemplate() {
       setPollingStatus(status);
     } catch (err) {
       console.error("Error adding creator:", err);
-      error("Failed to add creator. Please check the URL and try again.");
+      showToast("Failed to add creator. Please check the URL and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -175,7 +175,10 @@ export default function RepurposeEngineTemplate() {
   ) => {
     try {
       await repurposeEngineService.deleteMonitoredCreator(creatorId);
-      success(`Successfully removed ${creatorName} from monitoring!`);
+      showToast(
+        `Successfully removed ${creatorName} from monitoring!`,
+        "success"
+      );
 
       const [creators, status] = await Promise.all([
         repurposeEngineService.getMonitoredCreators(),
@@ -184,14 +187,17 @@ export default function RepurposeEngineTemplate() {
       setMonitoredCreators(creators);
       setPollingStatus(status);
     } catch {
-      error("Failed to delete creator. Please try again.");
+      showToast("Failed to delete creator. Please try again.");
     }
   };
 
   const handleManualPoll = async (creatorId: string, creatorName: string) => {
     try {
       await repurposeEngineService.manualPollCreator(creatorId);
-      success(`Successfully polled ${creatorName} for new content!`);
+      showToast(
+        `Successfully polled ${creatorName} for new content!`,
+        "success"
+      );
 
       const [creators, status, activity] = await Promise.all([
         repurposeEngineService.getMonitoredCreators(),
@@ -203,7 +209,7 @@ export default function RepurposeEngineTemplate() {
       setRecentActivity(activity);
     } catch (err) {
       console.error("Error manually polling creator:", err);
-      error("Failed to poll creator. Please try again.");
+      showToast("Failed to poll creator. Please try again.");
     }
   };
 

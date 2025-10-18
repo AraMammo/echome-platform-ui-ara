@@ -6,7 +6,7 @@ import { useToast } from "@/components/atoms/toast";
 
 export default function YouTubeCallbackPage() {
   const router = useRouter();
-  const { success, error } = useToast();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -21,15 +21,17 @@ export default function YouTubeCallbackPage() {
 
           router.push("/knowledge-base");
         } else {
-          error("No OAuth data found. Please try connecting again.");
+          showToast(
+            "No OAuth data found. Please try connecting again.",
+            "error"
+          );
 
           setTimeout(() => {
             router.push("/knowledge-base");
           }, 3000);
         }
-      } catch (err) {
-        console.error("YouTube callback error:", err);
-        error("YouTube connection failed. Please try again.");
+      } catch {
+        showToast("YouTube connection failed. Please try again.", "error");
 
         setTimeout(() => {
           router.push("/knowledge-base");
@@ -38,7 +40,8 @@ export default function YouTubeCallbackPage() {
     };
 
     handleCallback();
-  }, [router, success, error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
 
   return null;
 }

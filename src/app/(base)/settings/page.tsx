@@ -2,6 +2,7 @@
 
 import { UserProfileForm } from "@/components/molecules/user-profile-form";
 import ConnectedAccounts from "@/components/molecules/connected-accounts";
+import { PresetManager } from "@/components/molecules/preset-manager";
 import { useUsers } from "@/hooks/api/use-users";
 import { useAuthStore } from "@/stores/auth-store";
 import { useToast } from "@/components/atoms/toast";
@@ -10,7 +11,7 @@ import { useEffect } from "react";
 export default function SettingsPage() {
   const { user } = useAuthStore();
   const { getCurrentUser } = useUsers();
-  const { success, error } = useToast();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (user?.id && (!user?.firstName || !user?.lastName)) {
@@ -19,11 +20,11 @@ export default function SettingsPage() {
   }, [user, getCurrentUser]);
 
   const handleSuccess = (message: string) => {
-    success(message);
+    showToast(message, "success");
   };
 
   const handleError = (errorMessage: string) => {
-    error(errorMessage);
+    showToast(errorMessage);
   };
 
   return (
@@ -38,6 +39,7 @@ export default function SettingsPage() {
       <div className="grid gap-8">
         <UserProfileForm onSuccess={handleSuccess} onError={handleError} />
         <ConnectedAccounts />
+        <PresetManager />
       </div>
     </div>
   );

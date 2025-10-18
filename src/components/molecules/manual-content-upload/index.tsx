@@ -34,7 +34,7 @@ export default function ManualContentUpload({
   onUploadSuccess,
   className = "",
 }: ManualContentUploadProps) {
-  const { success, error: showToastError } = useToast();
+  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -55,7 +55,7 @@ export default function ManualContentUpload({
     e.preventDefault();
 
     if (!formData.content.trim()) {
-      showToastError("Content is required");
+      showToast("Content is required", "error");
       return;
     }
 
@@ -75,8 +75,9 @@ export default function ManualContentUpload({
       const response = await knowledgeBaseService.uploadContent(payload);
 
       setUploadSuccess(true);
-      success(
-        `Content uploaded successfully! ${response.vectorCount} vector(s) created.`
+      showToast(
+        `Content uploaded successfully! ${response.vectorCount} vector(s) created.`,
+        "success"
       );
 
       // Reset form
@@ -97,8 +98,9 @@ export default function ManualContentUpload({
       }, 2000);
     } catch (error) {
       console.error("Upload error:", error);
-      showToastError(
-        error instanceof Error ? error.message : "Failed to upload content"
+      showToast(
+        error instanceof Error ? error.message : "Failed to upload content",
+        "error"
       );
     } finally {
       setIsUploading(false);

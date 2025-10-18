@@ -32,7 +32,7 @@ interface SocialImportSectionProps {
 export default function SocialImportSection({
   onImportSuccess,
 }: SocialImportSectionProps) {
-  const { success, error: showToastError } = useToast();
+  const { showToast } = useToast();
 
   // State for URL inputs
   const [urls, setUrls] = useState({
@@ -66,14 +66,14 @@ export default function SocialImportSection({
 
   const handleImport = async (platform: string, url: string) => {
     if (!url || !url.trim()) {
-      showToastError("Please enter a valid URL");
+      showToast("Please enter a valid URL");
       return;
     }
 
     // Validate URL
     const validation = socialImportService.validateUrl(platform, url);
     if (!validation.isValid) {
-      showToastError(validation.error || "Please enter a valid URL");
+      showToast(validation.error || "Please enter a valid URL");
       return;
     }
 
@@ -105,7 +105,7 @@ export default function SocialImportSection({
       // Start polling for status
       startStatusPolling(response.jobId, platform);
 
-      success(
+      showToast(
         `Import Started! Importing ${platform} content... You can close this browser or submit other platforms while we process in the background.`
       );
     } catch (error) {
@@ -117,7 +117,7 @@ export default function SocialImportSection({
         },
       }));
 
-      showToastError(
+      showToast(
         error instanceof Error ? error.message : "Failed to start import"
       );
     }
@@ -155,7 +155,7 @@ export default function SocialImportSection({
             return newIntervals;
           });
 
-          success(
+          showToast(
             `🎉 ${platform} import complete! ${status.result?.entriesAdded || 0} items added to your knowledge base. Your content is now ready for AI generation!`
           );
 
@@ -169,7 +169,7 @@ export default function SocialImportSection({
             return newIntervals;
           });
 
-          showToastError(`${platform} import failed: ${status.errorMessage}`);
+          showToast(`${platform} import failed: ${status.errorMessage}`);
         }
       } catch {
         clearInterval(interval);
@@ -180,7 +180,7 @@ export default function SocialImportSection({
           return newIntervals;
         });
 
-        showToastError("Failed to check import status");
+        showToast("Failed to check import status");
       }
     }, 10000); // Poll every 10 seconds
 

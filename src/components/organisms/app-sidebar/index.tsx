@@ -14,6 +14,8 @@ import {
   Calendar,
   Clock,
   Package,
+  Sparkles,
+  Library,
 } from "lucide-react";
 
 import {
@@ -65,16 +67,16 @@ const navItems = [
     iconClassName: "text-primary",
   },
   {
-    title: "Create",
-    url: "/create",
-    icon: Zap,
+    title: "Generate",
+    url: "/generate",
+    icon: Sparkles,
     items: [],
     iconClassName: "text-primary",
   },
   {
-    title: "Content Kits",
-    url: "/content-kits",
-    icon: Package,
+    title: "Library",
+    url: "/library",
+    icon: Library,
     items: [],
     iconClassName: "text-primary",
   },

@@ -83,7 +83,7 @@ export default function SocialImportModal({
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { success, error: showToastError } = useToast();
+  const { showToast } = useToast();
 
   const selectedPlatformOption = platformOptions.find(
     (p) => p.value === selectedPlatform
@@ -117,7 +117,7 @@ export default function SocialImportModal({
 
       const response = await socialImportService.initiateImport(request);
 
-      success(`Import Started! ${response.message}`);
+      showToast(`Import Started! ${response.message}`, "success");
 
       setIsOpen(false);
       setUrl("");
@@ -131,7 +131,7 @@ export default function SocialImportModal({
       const errorMessage =
         error instanceof Error ? error.message : "Import failed";
       setError(errorMessage);
-      showToastError(`Import Failed: ${errorMessage}`);
+      showToast(`Import Failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

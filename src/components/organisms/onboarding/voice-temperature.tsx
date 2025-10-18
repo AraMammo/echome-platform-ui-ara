@@ -2,40 +2,44 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, WifiOff, Wifi } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { cn } from "@/utils/cn";
 import {
   useOnboardingStatus,
-  TemperatureLevel,
+  EchoLevel,
 } from "@/hooks/use-onboarding-status";
 import { DemoGenerator } from "./demo-generator";
 
-interface TemperatureMeterProps {
+interface SignalMeterProps {
   fileCount: number;
+  signalBars: number;
   percentComplete: number;
 }
 
-function TemperatureMeter({
+function SignalMeter({
   fileCount,
+  signalBars,
   percentComplete,
-}: TemperatureMeterProps) {
+}: SignalMeterProps) {
   const milestones = [
-    { emoji: "🧊", files: 0 },
-    { emoji: "❄️", files: 10 },
-    { emoji: "🌡️", files: 25 },
-    { emoji: "🔥", files: 50 },
-    { emoji: "🌋", files: 100 },
+    { label: "Silent", files: 0, bars: 0 },
+    { label: "Faint", files: 10, bars: 2 },
+    { label: "Clear", files: 25, bars: 3 },
+    { label: "Strong", files: 50, bars: 4 },
+    { label: "Crystal", files: 100, bars: 5 },
   ];
 
   return (
     <div className="relative">
       {/* Milestone markers */}
-      <div className="flex justify-between mb-2">
+      <div className="flex justify-between mb-4">
         {milestones.map((m) => (
-          <div key={m.files} className="text-center">
-            <div className="text-2xl">{m.emoji}</div>
-            <div className="text-xs text-[#9b8baf] mt-1">{m.files}</div>
+          <div key={m.files} className="text-center flex-1">
+            <div className="flex justify-center mb-2">
+              <SignalBars bars={m.bars} active={fileCount >= m.files} />
+            </div>
+            <div className="text-xs text-[#9b8baf] font-medium">{m.files}</div>
           </div>
         ))}
       </div>
@@ -56,14 +60,55 @@ function TemperatureMeter({
   );
 }
 
+interface SignalBarsProps {
+  bars: number;
+  active?: boolean;
+}
+
+function SignalBars({ bars, active = true }: SignalBarsProps) {
+  const totalBars = 5;
+  const barHeights = [20, 40, 60, 80, 100];
+
+  if (bars === 0) {
+    return (
+      <WifiOff
+        size={32}
+        className={cn(
+          "transition-colors",
+          active ? "text-[#9b8baf]" : "text-[#d5d2cc]"
+        )}
+      />
+    );
+  }
+
+  return (
+    <div className="flex items-end gap-0.5 h-8">
+      {Array.from({ length: totalBars }).map((_, i) => (
+        <div
+          key={i}
+          className={cn(
+            "w-1.5 rounded-sm transition-all duration-300",
+            i < bars
+              ? active
+                ? "bg-[#3a8e9c]"
+                : "bg-[#d5d2cc]"
+              : "bg-[#d5d2cc]"
+          )}
+          style={{ height: `${barHeights[i]}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface UnlockLevelProps {
-  emoji: string;
+  bars: number;
   files: string;
   benefit: string;
   unlocked: boolean;
 }
 
-function UnlockLevel({ emoji, files, benefit, unlocked }: UnlockLevelProps) {
+function UnlockLevel({ bars, files, benefit, unlocked }: UnlockLevelProps) {
   return (
     <div
       className={cn(
@@ -71,8 +116,8 @@ function UnlockLevel({ emoji, files, benefit, unlocked }: UnlockLevelProps) {
         unlocked ? "bg-white border border-[#3a8e9c]" : "opacity-60"
       )}
     >
-      <div className="text-2xl" aria-hidden="true">
-        {emoji}
+      <div className="w-10 flex justify-center" aria-hidden="true">
+        <SignalBars bars={bars} active={unlocked} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
@@ -87,37 +132,28 @@ function UnlockLevel({ emoji, files, benefit, unlocked }: UnlockLevelProps) {
   );
 }
 
-function getTemperatureEmoji(level: TemperatureLevel): string {
-  const emojis: Record<TemperatureLevel, string> = {
-    frozen: "🧊",
-    cold: "❄️",
-    cool: "🌡️",
-    hot: "🔥",
-    lava: "🌋",
+function getEchoLabel(level: EchoLevel): string {
+  const labels: Record<EchoLevel, string> = {
+    silent: "SILENT",
+    faint: "FAINT ECHO",
+    clear: "CLEAR ECHO",
+    strong: "STRONG ECHO",
+    crystal: "CRYSTAL ECHO",
   };
-  return emojis[level] || "🧊";
-}
-
-function getTemperatureLabel(level: TemperatureLevel): string {
-  const labels: Record<TemperatureLevel, string> = {
-    frozen: "FROZEN",
-    cold: "COLD",
-    cool: "COOL",
-    hot: "HOT",
-    lava: "LAVA",
-  };
-  return labels[level] || "FROZEN";
+  return labels[level] || "SILENT";
 }
 
 export function VoiceTemperatureOnboarding() {
-  const { fileCount, temperatureLevel, percentComplete } =
+  const { fileCount, echoLevel, signalBars, percentComplete } =
     useOnboardingStatus();
   const [showDemo, setShowDemo] = useState(false);
   const router = useRouter();
 
   const handleSkipSetup = () => {
     // Store skip preference in localStorage
-    localStorage.setItem("echome_onboarding_skipped", "true");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("echome_onboarding_skipped", "true");
+    }
     router.push("/?skip-onboarding=true");
   };
 
@@ -125,23 +161,26 @@ export function VoiceTemperatureOnboarding() {
     <>
       <div className="min-h-screen flex items-center justify-center p-6 bg-[#f9f8f6]">
         <div className="max-w-2xl w-full">
-          {/* Temperature Icon & Status */}
+          {/* Signal Icon & Status */}
           <div className="text-center mb-8">
-            <div className="text-8xl mb-4" aria-hidden="true">
-              {getTemperatureEmoji(temperatureLevel)}
+            <div className="flex justify-center mb-4" aria-hidden="true">
+              <div className="scale-[2.5]">
+                <SignalBars bars={signalBars} />
+              </div>
             </div>
             <h1 className="text-4xl font-medium text-[#1c1c1e] mb-2">
-              Your AI Brain: {getTemperatureLabel(temperatureLevel)}
+              Your Echo Signal: {getEchoLabel(echoLevel)}
             </h1>
             <p className="text-lg text-[#9b8baf]">
-              Echo Me has never heard your voice. Upload content to warm it up.
+              Echo Me hasn&apos;t learned your voice yet. Upload content to strengthen your signal.
             </p>
           </div>
 
-          {/* Temperature Progress Bar */}
+          {/* Signal Progress Bar */}
           <div className="mb-8">
-            <TemperatureMeter
+            <SignalMeter
               fileCount={fileCount}
+              signalBars={signalBars}
               percentComplete={percentComplete}
             />
             <p className="text-center text-sm text-[#9b8baf] mt-2">
@@ -225,25 +264,25 @@ export function VoiceTemperatureOnboarding() {
             </h3>
             <div className="space-y-3">
               <UnlockLevel
-                emoji="❄️"
+                bars={2}
                 files="10 files"
                 benefit="Basic content generation"
                 unlocked={fileCount >= 10}
               />
               <UnlockLevel
-                emoji="🌡️"
+                bars={3}
                 files="25 files"
                 benefit="Your voice starts showing"
                 unlocked={fileCount >= 25}
               />
               <UnlockLevel
-                emoji="🔥"
+                bars={4}
                 files="50 files"
                 benefit="Content sounds like you"
                 unlocked={fileCount >= 50}
               />
               <UnlockLevel
-                emoji="🌋"
+                bars={5}
                 files="100 files"
                 benefit="Indistinguishable from you"
                 unlocked={fileCount >= 100}

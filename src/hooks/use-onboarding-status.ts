@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { knowledgeBaseService } from "@/services/knowledge-base";
 
-export type TemperatureLevel = "frozen" | "cold" | "cool" | "hot" | "lava";
+export type EchoLevel = "silent" | "faint" | "clear" | "strong" | "crystal";
 
 export interface OnboardingStatus {
   needsOnboarding: boolean;
   fileCount: number;
-  temperatureLevel: TemperatureLevel;
+  echoLevel: EchoLevel;
+  signalBars: number;
   percentComplete: number;
   nextMilestone: number;
   filesUntilNext: number;
@@ -17,12 +18,21 @@ export interface OnboardingStatus {
 const ONBOARDING_THRESHOLD = 10;
 const MILESTONES = [10, 25, 50, 100];
 
-function getTemperatureLevel(fileCount: number): TemperatureLevel {
-  if (fileCount >= 100) return "lava";
-  if (fileCount >= 50) return "hot";
-  if (fileCount >= 25) return "cool";
-  if (fileCount >= 10) return "cold";
-  return "frozen";
+function getEchoLevel(fileCount: number): EchoLevel {
+  if (fileCount >= 100) return "crystal";
+  if (fileCount >= 50) return "strong";
+  if (fileCount >= 25) return "clear";
+  if (fileCount >= 10) return "faint";
+  return "silent";
+}
+
+function getSignalBars(fileCount: number): number {
+  if (fileCount >= 100) return 5;
+  if (fileCount >= 50) return 4;
+  if (fileCount >= 25) return 3;
+  if (fileCount >= 10) return 2;
+  if (fileCount > 0) return 1;
+  return 0;
 }
 
 function getNextMilestone(fileCount: number): number {
@@ -121,7 +131,8 @@ export function useOnboardingStatus(): OnboardingStatus {
   }, [fileCount, fetchFileCount]);
 
   const needsOnboarding = fileCount < ONBOARDING_THRESHOLD;
-  const temperatureLevel = getTemperatureLevel(fileCount);
+  const echoLevel = getEchoLevel(fileCount);
+  const signalBars = getSignalBars(fileCount);
   const nextMilestone = getNextMilestone(fileCount);
   const filesUntilNext = nextMilestone - fileCount;
   const percentComplete = Math.min((fileCount / 100) * 100, 100);
@@ -129,7 +140,8 @@ export function useOnboardingStatus(): OnboardingStatus {
   return {
     needsOnboarding,
     fileCount,
-    temperatureLevel,
+    echoLevel,
+    signalBars,
     percentComplete,
     nextMilestone,
     filesUntilNext,

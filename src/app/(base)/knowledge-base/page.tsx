@@ -1,23 +1,23 @@
-import KnowledgeBaseTemplate from "@/components/templates/knowledge-base";
+import KnowledgeBaseRedesign from "@/components/templates/knowledge-base-redesign";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Knowledge Base",
+  title: "Your Content DNA - Knowledge Base",
   description:
-    "Build and manage your content knowledge base with EchoMe. Organize ideas, research, and insights to fuel your content creation strategy.",
+    "Echo Me learns from YOUR voice, YOUR style, YOUR expertise. Upload content, connect accounts, and build your personalized content knowledge base.",
   openGraph: {
-    title: "Knowledge Base - EchoMe Content Management",
+    title: "Your Content DNA - EchoMe Knowledge Base",
     description:
-      "Build and manage your content knowledge base with EchoMe. Organize ideas, research, and insights to fuel your content creation.",
+      "Echo Me learns from YOUR voice, YOUR style, YOUR expertise. The more you feed it, the better your content becomes.",
     type: "website",
   },
   twitter: {
-    title: "Knowledge Base - EchoMe Content Management",
+    title: "Your Content DNA - EchoMe Knowledge Base",
     description:
-      "Build and manage your content knowledge base with EchoMe. Organize ideas, research, and insights to fuel your content creation.",
+      "Echo Me learns from YOUR voice, YOUR style, YOUR expertise. The more you feed it, the better your content becomes.",
   },
 };
 
 export default function KnowledgeBasePage() {
-  return <KnowledgeBaseTemplate />;
+  return <KnowledgeBaseRedesign />;
 }

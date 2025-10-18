@@ -6,8 +6,18 @@ This is a Next.js 15.4.6 application for testing new UI features, separate from 
 
 ## Recent Changes
 
-**October 18, 2025** - Audience Preset System & UX Flow Improvements
+**October 18, 2025** - Content Kits Redesign, Gmail Auto-Expand & Audience Presets
 
+- **Content Kits Redesign**: Rebranded Library page as "Content Kits" with modern UI improvements:
+  - Enhanced card design with better visual hierarchy and semantic naming (e.g., "Your Fitness Journey Guide" instead of random IDs)
+  - Added search functionality across kit titles and descriptions
+  - Improved filtering system with status badges (Processing/Ready/Failed)
+  - Grid/list view toggle for flexible content browsing
+  - Updated sidebar navigation: "Library" → "Content Kits" with Package icon
+- **Gmail Auto-Expand**: Implemented smart navigation from dashboard to Knowledge Base:
+  - Clicking "Import Gmail" button on dashboard navigates to `/knowledge-base?action=gmail`
+  - Gmail tutorial section automatically expands and smooth-scrolls into view
+  - Improves onboarding UX by reducing clicks and eliminating manual scrolling
 - Created 6 preset audience profiles covering full demographic spectrum (Urban Creative, Corporate Professional, Heartland American, Digital Native, Wellness Enthusiast, Established Expert)
 - Implemented improved preset selection UX with auto-advance workflow:
   - Click preset → Shows preview card with "Continue to Formats" and "Customize Details" options

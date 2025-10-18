@@ -54,11 +54,13 @@ export function useOnboardingStatus(): OnboardingStatus {
       setFileCount(total);
 
       // Cache the file count in localStorage to reduce API calls
-      localStorage.setItem("echome_kb_file_count", total.toString());
-      localStorage.setItem(
-        "echome_kb_file_count_timestamp",
-        Date.now().toString()
-      );
+      if (typeof window !== "undefined") {
+        localStorage.setItem("echome_kb_file_count", total.toString());
+        localStorage.setItem(
+          "echome_kb_file_count_timestamp",
+          Date.now().toString()
+        );
+      }
     } catch (err) {
       console.error("Error fetching knowledge base file count:", err);
       setError(
@@ -66,9 +68,11 @@ export function useOnboardingStatus(): OnboardingStatus {
       );
 
       // Try to use cached value if available
-      const cachedCount = localStorage.getItem("echome_kb_file_count");
-      if (cachedCount) {
-        setFileCount(parseInt(cachedCount, 10));
+      if (typeof window !== "undefined") {
+        const cachedCount = localStorage.getItem("echome_kb_file_count");
+        if (cachedCount) {
+          setFileCount(parseInt(cachedCount, 10));
+        }
       }
     } finally {
       setIsLoading(false);
@@ -76,6 +80,12 @@ export function useOnboardingStatus(): OnboardingStatus {
   }, []);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") {
+      setIsLoading(false);
+      return;
+    }
+
     // Check cache first
     const cachedCount = localStorage.getItem("echome_kb_file_count");
     const cachedTimestamp = localStorage.getItem(

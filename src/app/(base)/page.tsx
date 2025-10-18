@@ -41,10 +41,16 @@ export default function Dashboard() {
   const { showCelebration, currentMilestone, handleCloseCelebration } =
     useMilestoneTracker(fileCount);
 
-  // Check if user has explicitly skipped onboarding
-  const skipOnboarding =
-    searchParams?.get("skip-onboarding") === "true" ||
-    localStorage.getItem("echome_onboarding_skipped") === "true";
+  const [skipOnboarding, setSkipOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Check if user has explicitly skipped onboarding
+    const querySkip = searchParams?.get("skip-onboarding") === "true";
+    const localSkip = typeof window !== "undefined" 
+      ? localStorage.getItem("echome_onboarding_skipped") === "true"
+      : false;
+    setSkipOnboarding(querySkip || localSkip);
+  }, [searchParams]);
 
   // Show loading state while checking onboarding status
   if (isLoadingOnboardingStatus) {

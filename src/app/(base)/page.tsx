@@ -286,8 +286,8 @@ function RegularDashboard() {
   ];
 
   return (
-    <div className="min-h-screen px-6 py-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen px-6 py-8 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto space-y-8 overflow-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-[#1c1c1e] font-['Satoshi'] mb-2">
@@ -468,7 +468,7 @@ function RegularDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc]">
+          <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc] overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[#1c1c1e] font-['Satoshi']">
                 Weekly Content Activity
@@ -484,7 +484,7 @@ function RegularDashboard() {
                 </div>
               </div>
             </div>
-            <div className="h-64 flex items-end justify-between gap-2">
+            <div className="h-64 flex items-end justify-between gap-2 overflow-hidden">
               {weeklyData.length > 0 ? (
                 weeklyData.map((day, index) => (
                   <div key={index} className="flex flex-col items-center gap-2">
@@ -513,7 +513,7 @@ function RegularDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc]">
+          <div className="bg-white rounded-[20px] p-6 border border-[#d5d2cc] overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[#1c1c1e] font-['Satoshi']">
                 Monthly Trends
@@ -525,7 +525,7 @@ function RegularDashboard() {
                 </div>
               </div>
             </div>
-            <div className="h-64 flex items-end justify-between gap-2">
+            <div className="h-64 flex items-end justify-between gap-2 overflow-hidden">
               {monthlyData.length > 0 ? (
                 monthlyData.map((month, index) => (
                   <div key={index} className="flex flex-col items-center gap-2">

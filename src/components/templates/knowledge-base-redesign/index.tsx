@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/atoms/button";
 import {
   Select,
@@ -68,6 +69,7 @@ import SocialImportSection from "@/components/molecules/social-import-section";
 export default function KnowledgeBaseRedesign() {
   const { showToast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const searchParams = useSearchParams();
 
   // Media files state (moved up to use in hooks)
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -467,6 +469,21 @@ export default function KnowledgeBaseRedesign() {
       }
     }
   }, [isAuthenticated, authLoading]);
+
+  // Auto-expand Gmail tutorial when navigating from dashboard
+  useEffect(() => {
+    const action = searchParams?.get("action");
+    if (action === "gmail") {
+      setIsTutorialExpanded(true);
+      // Scroll to Gmail section after a brief delay to ensure DOM is ready
+      setTimeout(() => {
+        const gmailSection = document.getElementById("gmail-section");
+        if (gmailSection) {
+          gmailSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 300);
+    }
+  }, [searchParams]);
 
   const fetchMediaFiles = async () => {
     try {

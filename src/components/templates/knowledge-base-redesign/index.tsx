@@ -63,6 +63,7 @@ import { useRecommendations } from "@/hooks/use-recommendations";
 import { useContentAnalysis } from "@/hooks/use-content-analysis";
 import { SmartBanner } from "@/components/organisms/recommendations/smart-banner";
 import { ContentDiversityMeter } from "@/components/organisms/recommendations/content-diversity-meter";
+import SocialImportSection from "@/components/molecules/social-import-section";
 
 export default function KnowledgeBaseRedesign() {
   const { showToast } = useToast();
@@ -1320,76 +1321,19 @@ export default function KnowledgeBaseRedesign() {
                   Auto-Import Your Content
                 </h2>
                 <p className="text-stone-600 font-['Satoshi']">
-                  Connect once, stay synced forever
+                  Connect your social accounts to automatically import content
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                {/* YouTube Connection Card */}
-                <div className="bg-white rounded-[10px] p-6 border border-stone-200 hover:border-[#3a8e9c] transition-colors">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-red-100 rounded-[10px] flex items-center justify-center">
-                      <Youtube className="w-6 h-6 text-red-600" />
-                    </div>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      YouTube
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-600 font-['Satoshi'] mb-4">
-                    Import video transcripts automatically
-                  </p>
-                  {isYouTubeConnected() ? (
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium font-['Satoshi']">
-                        Connected
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={handleConnectYouTube}
-                      className="w-full bg-[#3a8e9c] hover:bg-[#2d7a85] text-white font-medium font-['Satoshi'] rounded-[10px]"
-                    >
-                      Connect
-                    </Button>
-                  )}
-                </div>
-
-                {/* Gmail Connection Card */}
-                <div className="bg-white rounded-[10px] p-6 border border-stone-200 hover:border-[#3a8e9c] transition-colors opacity-60">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-[10px] flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      Gmail
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-600 font-['Satoshi'] mb-4">
-                    Pull from your sent folder
-                  </p>
-                  <div className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-xs font-medium font-['Satoshi'] inline-block">
-                    Coming Soon
-                  </div>
-                </div>
-
-                {/* Google Drive Connection Card */}
-                <div className="bg-white rounded-[10px] p-6 border border-stone-200 hover:border-[#3a8e9c] transition-colors opacity-60">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-[10px] flex items-center justify-center">
-                      <HardDrive className="w-6 h-6 text-yellow-600" />
-                    </div>
-                    <h3 className="text-lg font-medium text-[#1c1c1e] font-['Satoshi']">
-                      Google Drive
-                    </h3>
-                  </div>
-                  <p className="text-sm text-stone-600 font-['Satoshi'] mb-4">
-                    Sync documents and files
-                  </p>
-                  <div className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-xs font-medium font-['Satoshi'] inline-block">
-                    Coming Soon
-                  </div>
-                </div>
-              </div>
+              <SocialImportSection
+                onImportSuccess={(platform, entriesAdded) => {
+                  showToast(
+                    `Successfully imported ${entriesAdded} items from ${platform}!`,
+                    "success"
+                  );
+                  fetchMediaFiles();
+                }}
+              />
             </TabsContent>
 
             {/* Tab 3: Paste Content */}

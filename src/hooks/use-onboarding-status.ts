@@ -44,7 +44,11 @@ function getNextMilestone(fileCount: number): number {
   return 100; // Max milestone
 }
 
-export function useOnboardingStatus(): OnboardingStatus {
+export interface UseOnboardingStatusReturn extends OnboardingStatus {
+  refresh: () => Promise<void>;
+}
+
+export function useOnboardingStatus(): UseOnboardingStatusReturn {
   const [fileCount, setFileCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,13 +58,16 @@ export function useOnboardingStatus(): OnboardingStatus {
       setIsLoading(true);
       setError(null);
 
-      // Fetch knowledge base content to count total files
+      // Fetch knowledge base content to count total PROCESSED entries
+      // Note: This counts processed KB entries, not raw media files
+      // Media files (via mediaService) may still be processing
       const response = await knowledgeBaseService.getContent({
         limit: 1, // We only need the total count from pagination
         offset: 0,
       });
 
       const total = response.pagination?.total || 0;
+      console.log(`📊 Knowledge Base count: ${total} processed entries`);
       setFileCount(total);
 
       // Cache the file count in localStorage to reduce API calls
@@ -147,5 +154,6 @@ export function useOnboardingStatus(): OnboardingStatus {
     filesUntilNext,
     isLoading,
     error,
+    refresh: fetchFileCount, // Allow manual refresh
   };
 }

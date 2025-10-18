@@ -26,7 +26,7 @@ const sourceOptions = [
     type: "file" as SourceType,
     icon: Video,
     title: "Upload File",
-    description: "Video, audio, or PDF files",
+    description: "Video, audio, PDF, or email archives",
   },
   {
     type: "url" as SourceType,
@@ -207,7 +207,7 @@ export function SourceStep() {
                   <FileUpload
                     onFileUploaded={handleFileUploaded}
                     onUploadError={handleFileUploadError}
-                    acceptedTypes={["video/*", "audio/*", "application/pdf"]}
+                    acceptedTypes={["video/*", "audio/*", "application/pdf", "application/mbox", ".mbox"]}
                     maxFileSize={500}
                   />
                   {fileError && (

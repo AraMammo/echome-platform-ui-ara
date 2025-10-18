@@ -18,6 +18,8 @@ This is a Next.js 15.4.6 application for testing new UI features, separate from 
 - Removed redundant Step 4 (Review) - Formats step now directly triggers generation
 - Streamlined to 3-step workflow: Source → Audience → Formats (with Generate button)
 - After generation starts, user is redirected to Library page to view progress
+- Added support for .mbox files (Google Takeout email archives) in file upload
+- File upload now accepts: video, audio, PDF, and .mbox email archive files
 
 **October 17, 2025** - Echo Signal Branding & Navigation Updates
 

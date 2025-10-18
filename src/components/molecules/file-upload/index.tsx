@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { Button } from "@/components/atoms/button";
-import { Upload, X, FileVideo, FileAudio, FileText } from "lucide-react";
+import { Upload, X, FileVideo, FileAudio, FileText, Mail } from "lucide-react";
 import { fileUploadService } from "@/services/file-upload";
 import { s3UploadService } from "@/services/s3-upload";
 
@@ -25,7 +25,7 @@ interface UploadedFile {
 export default function FileUpload({
   onFileUploaded,
   onUploadError,
-  acceptedTypes = ["video/*", "audio/*", "application/pdf"],
+  acceptedTypes = ["video/*", "audio/*", "application/pdf", "application/mbox", ".mbox"],
   maxFileSize = 500,
   className = "",
 }: FileUploadProps) {
@@ -56,6 +56,9 @@ export default function FileUpload({
         const isValidType = acceptedTypes.some((type) => {
           if (type.endsWith("/*")) {
             return file.type.startsWith(type.slice(0, -1));
+          }
+          if (type.startsWith(".")) {
+            return file.name.toLowerCase().endsWith(type.toLowerCase());
           }
           return file.type === type;
         });
@@ -170,16 +173,18 @@ export default function FileUpload({
     setUploadedFiles((prev) => prev.filter((f) => f.file !== fileToRemove));
   };
 
-  const getFileIcon = (fileType: string) => {
+  const getFileIcon = (fileType: string, fileName?: string) => {
     if (fileType.startsWith("video/")) return FileVideo;
     if (fileType.startsWith("audio/")) return FileAudio;
+    if (fileType === "application/mbox" || fileName?.toLowerCase().endsWith(".mbox")) return Mail;
     return FileText;
   };
 
-  const getFileTypeLabel = (fileType: string) => {
+  const getFileTypeLabel = (fileType: string, fileName?: string) => {
     if (fileType.startsWith("video/")) return "Video";
     if (fileType.startsWith("audio/")) return "Audio";
     if (fileType === "application/pdf") return "PDF";
+    if (fileType === "application/mbox" || fileName?.toLowerCase().endsWith(".mbox")) return "MBOX (Email Archive)";
     return "File";
   };
 
@@ -198,12 +203,15 @@ export default function FileUpload({
         <Upload className="mx-auto h-12 w-12 text-stone-400 mb-4" />
         <div className="space-y-2">
           <p className="text-lg font-medium text-stone-900">
-            Upload video, audio, or PDF files
+            Upload video, audio, PDF, or email archives
           </p>
           <p className="text-sm text-stone-500">
             Drag and drop files here, or click to select
           </p>
           <p className="text-xs text-stone-400">
+            Supports .mp4, .mp3, .pdf, .mbox (Google Takeout)
+          </p>
+          <p className="text-xs text-stone-500 mt-1">
             Maximum file size: {maxFileSize}MB
           </p>
         </div>
@@ -232,8 +240,8 @@ export default function FileUpload({
           <h3 className="text-sm font-medium text-gray-900">Uploaded Files</h3>
           {uploadedFiles.map((uploadedFile, index) => {
             const { file, uploadStatus, error, uploadProgress } = uploadedFile;
-            const FileIcon = getFileIcon(file.type);
-            const fileTypeLabel = getFileTypeLabel(file.type);
+            const FileIcon = getFileIcon(file.type, file.name);
+            const fileTypeLabel = getFileTypeLabel(file.type, file.name);
 
             return (
               <div

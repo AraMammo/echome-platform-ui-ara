@@ -82,9 +82,9 @@ const navItems = [
     minFilesRequired: 0,
   },
   {
-    title: "Library",
+    title: "Content Kits",
     url: "/library",
-    icon: Library,
+    icon: Package,
     items: [],
     iconClassName: "text-primary",
     minFilesRequired: 0,

@@ -157,6 +157,22 @@ export function FormatStep() {
     return Math.ceil(total);
   };
 
+  // Map frontend format names to backend ContentType names
+  const mapFormatsToContentTypes = (formats: ContentFormat[]): string[] => {
+    const formatMap: Record<ContentFormat, string> = {
+      blog_post: "blogPost",
+      linkedin_post: "linkedInPost",
+      tweet: "tweets",
+      instagram_caption: "instagramCarousel",
+      facebook_post: "facebookPost",
+      youtube_script: "youtubeScript",
+      newsletter: "newsletter",
+      video_clip: "videoClips",
+    };
+
+    return formats.map((format) => formatMap[format]);
+  };
+
   const handleGenerate = async () => {
     setIsSubmitting(true);
     setIsGenerating(true);
@@ -174,8 +190,10 @@ export function FormatStep() {
         fileId?: string;
         text?: string;
         content?: string;
+        selectedContentTypes?: string[];
       } = {
         userId,
+        selectedContentTypes: mapFormatsToContentTypes(selectedFormats),
       };
 
       if (sourceType === "file" && fileId) {
@@ -197,7 +215,6 @@ export function FormatStep() {
       if (!baseInputData.content) {
         baseInputData.content = JSON.stringify({
           audience,
-          formats: selectedFormats,
           useKnowledgeBase,
         });
       }
@@ -209,7 +226,7 @@ export function FormatStep() {
 
       setJobId(response.jobId);
       clearDraft();
-      
+
       router.push(`/library/${response.jobId}`);
     } catch (err) {
       setError(

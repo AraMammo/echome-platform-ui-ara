@@ -46,9 +46,10 @@ export default function Dashboard() {
   useEffect(() => {
     // Check if user has explicitly skipped onboarding
     const querySkip = searchParams?.get("skip-onboarding") === "true";
-    const localSkip = typeof window !== "undefined" 
-      ? localStorage.getItem("echome_onboarding_skipped") === "true"
-      : false;
+    const localSkip =
+      typeof window !== "undefined"
+        ? localStorage.getItem("echome_onboarding_skipped") === "true"
+        : false;
     setSkipOnboarding(querySkip || localSkip);
   }, [searchParams]);
 

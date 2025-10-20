@@ -55,7 +55,9 @@ export class AnalyticsService {
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     if (!this.baseUrl) {
-      console.warn("API base URL is not configured (NEXT_PUBLIC_BASE_URL) - API calls will not work");
+      console.warn(
+        "API base URL is not configured (NEXT_PUBLIC_BASE_URL) - API calls will not work"
+      );
     }
   }
 

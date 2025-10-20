@@ -25,7 +25,13 @@ interface UploadedFile {
 export default function FileUpload({
   onFileUploaded,
   onUploadError,
-  acceptedTypes = ["video/*", "audio/*", "application/pdf", "application/mbox", ".mbox"],
+  acceptedTypes = [
+    "video/*",
+    "audio/*",
+    "application/pdf",
+    "application/mbox",
+    ".mbox",
+  ],
   maxFileSize = 500,
   className = "",
 }: FileUploadProps) {
@@ -176,7 +182,11 @@ export default function FileUpload({
   const getFileIcon = (fileType: string, fileName?: string) => {
     if (fileType.startsWith("video/")) return FileVideo;
     if (fileType.startsWith("audio/")) return FileAudio;
-    if (fileType === "application/mbox" || fileName?.toLowerCase().endsWith(".mbox")) return Mail;
+    if (
+      fileType === "application/mbox" ||
+      fileName?.toLowerCase().endsWith(".mbox")
+    )
+      return Mail;
     return FileText;
   };
 
@@ -184,7 +194,11 @@ export default function FileUpload({
     if (fileType.startsWith("video/")) return "Video";
     if (fileType.startsWith("audio/")) return "Audio";
     if (fileType === "application/pdf") return "PDF";
-    if (fileType === "application/mbox" || fileName?.toLowerCase().endsWith(".mbox")) return "MBOX (Email Archive)";
+    if (
+      fileType === "application/mbox" ||
+      fileName?.toLowerCase().endsWith(".mbox")
+    )
+      return "MBOX (Email Archive)";
     return "File";
   };
 

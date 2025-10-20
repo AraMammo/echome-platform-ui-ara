@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, WifiOff, Wifi } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { cn } from "@/utils/cn";
-import {
-  useOnboardingStatus,
-  EchoLevel,
-} from "@/hooks/use-onboarding-status";
+import { useOnboardingStatus, EchoLevel } from "@/hooks/use-onboarding-status";
 import { DemoGenerator } from "./demo-generator";
 
 interface SignalMeterProps {
@@ -172,7 +169,8 @@ export function VoiceTemperatureOnboarding() {
               Your Echo Signal: {getEchoLabel(echoLevel)}
             </h1>
             <p className="text-lg text-[#9b8baf]">
-              Echo Me hasn&apos;t learned your voice yet. Upload content to strengthen your signal.
+              Echo Me hasn&apos;t learned your voice yet. Upload content to
+              strengthen your signal.
             </p>
           </div>
 

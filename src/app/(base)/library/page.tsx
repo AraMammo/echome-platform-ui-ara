@@ -130,7 +130,18 @@ export default function ContentKitsPage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [processingKits, setProcessingKits] = useState<Record<string, any>>({});
+  const [processingKits, setProcessingKits] = useState<
+    Record<
+      string,
+      {
+        currentStep: string;
+        completedSteps: string[];
+        totalSteps: number;
+        percentage: number;
+        estimatedTimeRemaining?: number;
+      }
+    >
+  >({});
 
   const loadContentKits = async (loadMore = false) => {
     try {
@@ -177,7 +188,7 @@ export default function ContentKitsPage() {
               ...prev,
               [jobId]: status.progress,
             }));
-            
+
             if (status.status !== "PROCESSING") {
               loadContentKits();
             }
@@ -515,42 +526,43 @@ export default function ContentKitsPage() {
                         )}
 
                         {/* Outputs Preview */}
-                        {kit.status === "COMPLETED" && activeOutputs.length > 0 && (
-                          <div className="pt-3 border-t border-stone-100">
-                            <div className="flex flex-wrap gap-2">
-                              {activeOutputs.slice(0, 4).map(([key]) => {
-                                const output =
-                                  outputIcons[
-                                    key as keyof typeof outputIcons
-                                  ];
-                                if (!output) return null;
-                                const OutputIcon = output.icon;
-                                return (
-                                  <div
-                                    key={key}
-                                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-stone-50 rounded-lg text-xs text-stone-700"
-                                    title={output.label}
-                                  >
-                                    <OutputIcon className="w-3.5 h-3.5" />
-                                    <span className="hidden sm:inline">
-                                      {output.label}
-                                    </span>
+                        {kit.status === "COMPLETED" &&
+                          activeOutputs.length > 0 && (
+                            <div className="pt-3 border-t border-stone-100">
+                              <div className="flex flex-wrap gap-2">
+                                {activeOutputs.slice(0, 4).map(([key]) => {
+                                  const output =
+                                    outputIcons[
+                                      key as keyof typeof outputIcons
+                                    ];
+                                  if (!output) return null;
+                                  const OutputIcon = output.icon;
+                                  return (
+                                    <div
+                                      key={key}
+                                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-stone-50 rounded-lg text-xs text-stone-700"
+                                      title={output.label}
+                                    >
+                                      <OutputIcon className="w-3.5 h-3.5" />
+                                      <span className="hidden sm:inline">
+                                        {output.label}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                                {activeOutputs.length > 4 && (
+                                  <div className="flex items-center px-2.5 py-1.5 bg-stone-50 rounded-lg text-xs text-stone-600">
+                                    +{activeOutputs.length - 4} more
                                   </div>
-                                );
-                              })}
-                              {activeOutputs.length > 4 && (
-                                <div className="flex items-center px-2.5 py-1.5 bg-stone-50 rounded-lg text-xs text-stone-600">
-                                  +{activeOutputs.length - 4} more
-                                </div>
+                                )}
+                              </div>
+                              {kit.outputs.videoClipCount > 0 && (
+                                <p className="text-xs text-stone-600 mt-2">
+                                  {kit.outputs.videoClipCount} video clips
+                                </p>
                               )}
                             </div>
-                            {kit.outputs.videoClipCount > 0 && (
-                              <p className="text-xs text-stone-600 mt-2">
-                                {kit.outputs.videoClipCount} video clips
-                              </p>
-                            )}
-                          </div>
-                        )}
+                          )}
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 pt-2">
@@ -583,10 +595,15 @@ export default function ContentKitsPage() {
                                       {processingKits[kit.jobId].currentStep}
                                     </span>
                                     <span className="text-stone-500 flex-shrink-0">
-                                      {Math.round(processingKits[kit.jobId].percentage)}%
+                                      {Math.round(
+                                        processingKits[kit.jobId].percentage
+                                      )}
+                                      %
                                     </span>
                                   </div>
-                                  <Progress value={processingKits[kit.jobId].percentage} />
+                                  <Progress
+                                    value={processingKits[kit.jobId].percentage}
+                                  />
                                 </>
                               ) : (
                                 <Button
@@ -660,35 +677,38 @@ export default function ContentKitsPage() {
                           {kit.completedAt && (
                             <>
                               <span className="text-stone-300">•</span>
-                              <span>Completed {formatDate(kit.completedAt)}</span>
+                              <span>
+                                Completed {formatDate(kit.completedAt)}
+                              </span>
                             </>
                           )}
                         </p>
-                        {kit.status === "COMPLETED" && activeOutputs.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {activeOutputs.slice(0, 6).map(([key]) => {
-                              const output =
-                                outputIcons[key as keyof typeof outputIcons];
-                              if (!output) return null;
-                              const OutputIcon = output.icon;
-                              return (
-                                <div
-                                  key={key}
-                                  className="flex items-center gap-1 px-2 py-1 bg-stone-50 rounded-md text-xs text-stone-700"
-                                  title={output.label}
-                                >
-                                  <OutputIcon className="w-3 h-3" />
-                                  {output.label}
+                        {kit.status === "COMPLETED" &&
+                          activeOutputs.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {activeOutputs.slice(0, 6).map(([key]) => {
+                                const output =
+                                  outputIcons[key as keyof typeof outputIcons];
+                                if (!output) return null;
+                                const OutputIcon = output.icon;
+                                return (
+                                  <div
+                                    key={key}
+                                    className="flex items-center gap-1 px-2 py-1 bg-stone-50 rounded-md text-xs text-stone-700"
+                                    title={output.label}
+                                  >
+                                    <OutputIcon className="w-3 h-3" />
+                                    {output.label}
+                                  </div>
+                                );
+                              })}
+                              {activeOutputs.length > 6 && (
+                                <div className="px-2 py-1 bg-stone-50 rounded-md text-xs text-stone-600">
+                                  +{activeOutputs.length - 6}
                                 </div>
-                              );
-                            })}
-                            {activeOutputs.length > 6 && (
-                              <div className="px-2 py-1 bg-stone-50 rounded-md text-xs text-stone-600">
-                                +{activeOutputs.length - 6}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                              )}
+                            </div>
+                          )}
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">

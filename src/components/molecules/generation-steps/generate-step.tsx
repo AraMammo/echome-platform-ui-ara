@@ -48,6 +48,24 @@ export function GenerateStep() {
     null
   );
 
+  // Map frontend format names to backend ContentType names
+  const mapFormatsToContentTypes = (
+    formats: typeof selectedFormats
+  ): string[] => {
+    const formatMap: Record<string, string> = {
+      blog_post: "blogPost",
+      linkedin_post: "linkedInPost",
+      tweet: "tweets",
+      instagram_caption: "instagramCarousel",
+      facebook_post: "facebookPost",
+      youtube_script: "youtubeScript",
+      newsletter: "newsletter",
+      video_clip: "videoClips",
+    };
+
+    return formats.map((format) => formatMap[format] || format);
+  };
+
   // Start generation
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -68,8 +86,10 @@ export function GenerateStep() {
         fileId?: string;
         text?: string;
         content?: string;
+        selectedContentTypes?: string[];
       } = {
         userId,
+        selectedContentTypes: mapFormatsToContentTypes(selectedFormats),
       };
 
       if (sourceType === "file" && fileId) {
@@ -93,7 +113,6 @@ export function GenerateStep() {
       if (!baseInputData.content) {
         baseInputData.content = JSON.stringify({
           audience,
-          formats: selectedFormats,
           useKnowledgeBase,
         });
       }

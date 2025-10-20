@@ -107,7 +107,9 @@ export class DatabaseContentService {
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     if (!this.baseUrl) {
-      console.warn("API base URL is not configured (NEXT_PUBLIC_BASE_URL) - API calls will not work");
+      console.warn(
+        "API base URL is not configured (NEXT_PUBLIC_BASE_URL) - API calls will not work"
+      );
     }
   }
 
@@ -316,7 +318,8 @@ export class DatabaseContentService {
         id: "5",
         contentType: "blog_post",
         title: "The Future of AI in Marketing",
-        content: "Artificial intelligence is transforming how we approach marketing...",
+        content:
+          "Artificial intelligence is transforming how we approach marketing...",
         prompt: "Write about AI trends in marketing",
         model: "gpt-4",
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),

@@ -283,7 +283,8 @@ export default function LibraryDetailPage() {
                   Generating Your Content Kit
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  Your content is being processed. This page will update automatically.
+                  Your content is being processed. This page will update
+                  automatically.
                 </p>
               </div>
             </div>
@@ -302,11 +303,16 @@ export default function LibraryDetailPage() {
                   <Progress value={contentKit.progress.percentage} />
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>
-                      {contentKit.progress.completedSteps.length} of {contentKit.progress.totalSteps} steps completed
+                      {contentKit.progress.completedSteps.length} of{" "}
+                      {contentKit.progress.totalSteps} steps completed
                     </span>
                     {contentKit.progress.estimatedTimeRemaining && (
                       <span>
-                        ~{Math.ceil(contentKit.progress.estimatedTimeRemaining / 60)} min remaining
+                        ~
+                        {Math.ceil(
+                          contentKit.progress.estimatedTimeRemaining / 60
+                        )}{" "}
+                        min remaining
                       </span>
                     )}
                   </div>
@@ -314,10 +320,15 @@ export default function LibraryDetailPage() {
 
                 {contentKit.progress.completedSteps.length > 0 && (
                   <div className="pt-4 border-t border-gray-200">
-                    <p className="text-xs font-medium text-gray-700 mb-2">Completed steps:</p>
+                    <p className="text-xs font-medium text-gray-700 mb-2">
+                      Completed steps:
+                    </p>
                     <div className="space-y-1">
                       {contentKit.progress.completedSteps.map((step, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 text-xs text-gray-600"
+                        >
                           <Check className="h-3 w-3 text-green-600" />
                           {step}
                         </div>

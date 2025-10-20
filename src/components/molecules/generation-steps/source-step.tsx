@@ -207,7 +207,13 @@ export function SourceStep() {
                   <FileUpload
                     onFileUploaded={handleFileUploaded}
                     onUploadError={handleFileUploadError}
-                    acceptedTypes={["video/*", "audio/*", "application/pdf", "application/mbox", ".mbox"]}
+                    acceptedTypes={[
+                      "video/*",
+                      "audio/*",
+                      "application/pdf",
+                      "application/mbox",
+                      ".mbox",
+                    ]}
                     maxFileSize={500}
                   />
                   {fileError && (

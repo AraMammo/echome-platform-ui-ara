@@ -89,7 +89,18 @@ export default function ContentKitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [nextToken, setNextToken] = useState<string | undefined>();
   const [deletingKit, setDeletingKit] = useState<string | null>(null);
-  const [processingKits, setProcessingKits] = useState<Record<string, any>>({});
+  const [processingKits, setProcessingKits] = useState<
+    Record<
+      string,
+      {
+        currentStep: string;
+        completedSteps: string[];
+        totalSteps: number;
+        percentage: number;
+        estimatedTimeRemaining?: number;
+      }
+    >
+  >({});
 
   const loadContentKits = async (loadMore = false) => {
     try {
@@ -136,7 +147,7 @@ export default function ContentKitsPage() {
               ...prev,
               [jobId]: status.progress,
             }));
-            
+
             if (status.status !== "PROCESSING") {
               loadContentKits();
             }
@@ -311,24 +322,33 @@ export default function ContentKitsPage() {
                       )}
                     </div>
 
-                    {kit.status === "PROCESSING" && processingKits[kit.jobId] && (
-                      <div className="mb-4 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">
-                            {processingKits[kit.jobId].currentStep}
-                          </span>
-                          <span className="text-gray-500">
-                            {Math.round(processingKits[kit.jobId].percentage)}%
-                          </span>
+                    {kit.status === "PROCESSING" &&
+                      processingKits[kit.jobId] && (
+                        <div className="mb-4 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-600">
+                              {processingKits[kit.jobId].currentStep}
+                            </span>
+                            <span className="text-gray-500">
+                              {Math.round(processingKits[kit.jobId].percentage)}
+                              %
+                            </span>
+                          </div>
+                          <Progress
+                            value={processingKits[kit.jobId].percentage}
+                          />
+                          {processingKits[kit.jobId].estimatedTimeRemaining && (
+                            <p className="text-xs text-gray-500">
+                              ~
+                              {Math.ceil(
+                                processingKits[kit.jobId]
+                                  .estimatedTimeRemaining / 60
+                              )}{" "}
+                              min remaining
+                            </p>
+                          )}
                         </div>
-                        <Progress value={processingKits[kit.jobId].percentage} />
-                        {processingKits[kit.jobId].estimatedTimeRemaining && (
-                          <p className="text-xs text-gray-500">
-                            ~{Math.ceil(processingKits[kit.jobId].estimatedTimeRemaining / 60)} min remaining
-                          </p>
-                        )}
-                      </div>
-                    )}
+                      )}
 
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
